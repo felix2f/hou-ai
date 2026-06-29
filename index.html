@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOU · AI决策引擎</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --surface2: #181818;
+      --border: #1f1f1f;
+      --primary: #FF4500;
+      --primary2: #FF8C00;
+      --text: #f0f0f0;
+      --text2: #555555;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── 登录页 ── */
+    #loginScreen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 40%, #1c0800 0%, #080808 65%);
+    }
+    .login-logo {
+      font-size: 96px; font-weight: 900; letter-spacing: -6px;
+      background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 40px rgba(255,69,0,0.45));
+      line-height: 1; margin-bottom: 8px;
+    }
+    .login-sub {
+      color: var(--text2); font-size: 11px; letter-spacing: 6px;
+      text-transform: uppercase; margin-bottom: 52px;
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px; width: 340px;
+    }
+    .login-card input {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; color: var(--text); font-size: 15px;
+      outline: none; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .login-card input:focus { border-color: var(--primary); }
+    .login-card input::placeholder { color: #333; }
+    .login-err { color: #ff4444; font-size: 13px; margin-bottom: 10px; display: none; }
+    .btn-fire {
+      width: 100%;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 10px; padding: 14px;
+      color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 1px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-fire:hover { opacity: 0.88; }
+    .btn-fire:active { transform: scale(0.98); }
+
+    /* ── 聊天页 ── */
+    #chatScreen {
+      display: none; flex-direction: column; height: 100vh;
+    }
+    .chat-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .h-logo {
+      font-size: 22px; font-weight: 900; letter-spacing: -1px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255,69,0,0.5));
+    }
+    .h-model {
+      background: var(--surface2); border: 1px solid #2a2a2a;
+      border-radius: 20px; padding: 4px 14px;
+      font-size: 11px; color: #444; letter-spacing: 0.5px;
+    }
+    .h-new {
+      background: none; border: 1px solid #222; border-radius: 8px;
+      padding: 6px 14px; color: #444; font-size: 12px; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .h-new:hover { border-color: #444; color: #888; }
+
+    .messages {
+      flex: 1; overflow-y: auto; padding: 32px 24px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+
+    .msg {
+      max-width: 78%; line-height: 1.7; font-size: 15px;
+      padding: 14px 18px; border-radius: 14px;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .msg.user {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      color: #fff; align-self: flex-end; border-bottom-right-radius: 4px;
+    }
+    .msg.bot {
+      background: var(--surface); border: 1px solid var(--border);
+      align-self: flex-start; border-bottom-left-radius: 4px; color: var(--text);
+    }
+    .msg.bot strong { color: #FF8C00; }
+
+    .typing {
+      display: flex; gap: 5px; align-items: center;
+      padding: 16px 18px;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); opacity: 0.3; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .input-area {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end;
+      flex-shrink: 0;
+    }
+    #userInput {
+      flex: 1; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 13px 16px; color: var(--text); font-size: 15px;
+      outline: none; resize: none; min-height: 48px; max-height: 160px;
+      line-height: 1.6; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    #userInput:focus { border-color: #FF4500; }
+    #userInput::placeholder { color: #333; }
+    .send-btn {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 12px;
+      width: 48px; height: 48px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.2s, transform 0.1s;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn svg { width: 20px; height: 20px; fill: white; }
+
+    .empty-hint {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      color: var(--text2);
+    }
+    .empty-hint .big { font-size: 40px; font-weight: 900; letter-spacing: -2px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(255,69,0,0.3));
+    }
+    .empty-hint .small { font-size: 13px; color: #333; letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-logo">HOU</div>
+  <div class="login-sub">AI · 商业决策引擎</div>
+  <div class="login-card">
+    <input type="password" id="pwdInput" placeholder="输入访问密码" />
+    <div class="login-err" id="loginErr">密码错误，请重试</div>
+    <button class="btn-fire" onclick="doLogin()">进入 HOU</button>
+  </div>
+</div>
+
+<div id="chatScreen">
+  <div class="chat-header">
+    <div class="h-logo">HOU</div>
+    <div class="h-model">DeepSeek V4 Pro</div>
+    <button class="h-new" onclick="newChat()">+ 新对话</button>
+  </div>
+  <div id="messages" class="messages">
+    <div class="empty-hint" id="emptyHint">
+      <div class="big">HOU</div>
+      <div class="small">把你的问题告诉我</div>
+    </div>
+  </div>
+  <div class="input-area">
+    <textarea id="userInput" placeholder="生意遇到瓶颈？决策拿不定？直接说..." rows="1"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" onclick="sendMsg()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const SYSTEM = `你是HOU，专为商业决策和认知升级打造的AI引擎。
+
+身份：HOU，由顶级商业思维训练而成的AI决策系统。当被问到"你是什么AI""你是哪个模型"时，回答：我是HOU，一个专注于商业决策和认知升级的AI引擎。
+
+核心能力：
+- 商业破局：帮用户找到别人看不到的突破口
+- 决策分析：把复杂问题拆成清晰选项和代价
+- 认知升级：用底层逻辑帮用户穿透表象
+- 执行转化：把模糊想法变成今天能动手的第一步
+
+风格铁律：
+- 直接给结论，不绕弯子，不废话
+- 用数字和逻辑说话
+- 结尾给出具体的下一步行动
+- 像顶级商业顾问，不像教科书
+- 这是付费专业服务，每个回答都要让用户觉得钱花得值`;
+
+let msgs = [];
+let pwd = '';
+
+document.getElementById('pwdInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogin() {
+  const p = document.getElementById('pwdInput').value.trim();
+  if (!p) return;
+  try {
+    const r = await fetch('/api/auth', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({password: p})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      pwd = p;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('chatScreen').style.display = 'flex';
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  } catch {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function newChat() {
+  msgs = [];
+  document.getElementById('messages').innerHTML =
+    '<div class="empty-hint" id="emptyHint"><div class="big">HOU</div><div class="small">把你的问题告诉我</div></div>';
+}
+
+function addMsg(role, text) {
+  const hint = document.getElementById('emptyHint');
+  if (hint) hint.remove();
+  const div = document.createElement('div');
+  div.className = `msg ${role === 'user' ? 'user' : 'bot'}`;
+  div.innerHTML = fmt(text);
+  document.getElementById('messages').appendChild(div);
+  scrollBot();
+  return div;
+}
+
+function fmt(t) {
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+
+function scrollBot() {
+  const m = document.getElementById('messages');
+  m.scrollTop = m.scrollHeight;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('userInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+
+  addMsg('user', text);
+  msgs.push({role:'user', content: text});
+
+  const loader = document.createElement('div');
+  loader.className = 'msg bot typing';
+  loader.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  document.getElementById('messages').appendChild(loader);
+  scrollBot();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        messages: [{role:'system',content:SYSTEM}, ...msgs],
+        password: pwd
+      })
+    });
+
+    loader.remove();
+    if (!res.ok) { addMsg('bot','连接出错，请稍后重试。'); return; }
+
+    const botDiv = addMsg('bot','');
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '', buf = '';
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        if (data === '[DONE]') break;
+        try {
+          const j = JSON.parse(data);
+          const delta = j.choices?.[0]?.delta;
+          if (delta?.reasoning_content) continue; // 过滤thinking
+          if (delta?.content) {
+            full += delta.content;
+            botDiv.innerHTML = fmt(full);
+            scrollBot();
+          }
+        } catch {}
+      }
+    }
+    msgs.push({role:'assistant', content: full});
+  } catch {
+    loader.remove();
+    addMsg('bot','网络错误，请检查连接后重试。');
+  }
+}
+</script>
+</body>
+</html>
