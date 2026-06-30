@@ -78,6 +78,21 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
     }
+    .login-tag {
+      font-size: 13px; font-weight: 700; letter-spacing: 6px;
+      text-transform: uppercase; margin-bottom: 18px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0,212,255,0.8), 0 0 40px rgba(0,212,255,0.4);
+      position: relative;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .login-tag::before, .login-tag::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5));
+    }
+    .login-tag::after {
+      background: linear-gradient(90deg, rgba(0,212,255,0.5), transparent);
+    }
     .login-logo {
       font-size: 100px; font-weight: 900; letter-spacing: -6px;
       background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
@@ -294,6 +309,7 @@
 
 <!-- 登录页 -->
 <div id="loginScreen">
+  <div class="login-tag">你的赛博资本家分身</div>
   <div class="login-logo">HOU</div>
   <div class="login-sub">
     <span class="line1">你的赛博资本家分身</span>
