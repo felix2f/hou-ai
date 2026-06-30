@@ -7,13 +7,15 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #060608;
+      --bg: #020204;
       --surface: #0e0e12;
       --surface2: #16161c;
       --border: #1e1e28;
       --primary: #FF4500;
       --primary2: #FF8C00;
+      --accent: #00D4FF;
       --glow: rgba(255,69,0,0.35);
+      --glow-blue: rgba(0,212,255,0.2);
       --text: #e8e8f0;
       --text2: #44445a;
     }
@@ -23,6 +25,47 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
     }
+
+    /* 网格背景 */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* 中心径向光晕 */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 60% at 50% 45%,
+        rgba(255,69,0,0.06) 0%,
+        rgba(0,212,255,0.03) 50%,
+        transparent 100%);
+    }
+
+    /* 扫描线 */
+    .scanline {
+      position: fixed; left: 0; right: 0; z-index: 1; pointer-events: none;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), rgba(255,69,0,0.3), transparent);
+      animation: scan 6s linear infinite;
+      box-shadow: 0 0 18px rgba(0,212,255,0.3);
+    }
+    @keyframes scan { from { top: -2px; } to { top: 100vh; } }
+
+    /* 角落装饰 */
+    .corner { position: fixed; z-index: 1; pointer-events: none; width: 28px; height: 28px; }
+    .corner::before, .corner::after { content: ''; position: absolute; background: var(--accent); }
+    .corner::before { width: 100%; height: 1.5px; }
+    .corner::after  { width: 1.5px; height: 100%; }
+    .c-tl { top: 20px; left: 20px; }
+    .c-tr { top: 20px; right: 20px; transform: scaleX(-1); }
+    .c-bl { bottom: 20px; left: 20px; transform: scaleY(-1); }
+    .c-br { bottom: 20px; right: 20px; transform: scale(-1); }
+    .corner { opacity: 0.5; }
 
     /* 粒子画布 */
     #particles {
@@ -48,15 +91,20 @@
       to   { filter: drop-shadow(0 0 70px rgba(255,140,0,0.7)); }
     }
     .login-sub {
-      color: var(--text2); font-size: 11px; letter-spacing: 8px;
-      text-transform: uppercase; margin-bottom: 56px;
+      color: #3a3a50; font-size: 12px; letter-spacing: 2px;
+      margin-bottom: 56px; text-align: center; line-height: 1.8;
     }
+    .login-sub .line1 { display: block; font-size: 13px; color: #4a4a62; }
+    .login-sub .line2 { display: block; font-size: 11px; color: #323248; letter-spacing: 1.5px; }
     .login-card {
-      background: rgba(14,14,18,0.85);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
+      background: rgba(10,10,14,0.9);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(0,212,255,0.12);
       border-radius: 20px; padding: 36px; width: 340px;
-      box-shadow: 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: 0 0 80px rgba(0,0,0,0.8),
+                  0 0 40px rgba(255,69,0,0.08),
+                  inset 0 1px 0 rgba(255,255,255,0.04),
+                  inset 0 0 60px rgba(0,212,255,0.02);
     }
     .login-label {
       font-size: 11px; letter-spacing: 3px; color: var(--text2);
@@ -238,11 +286,19 @@
 <body>
 
 <canvas id="particles"></canvas>
+<div class="scanline"></div>
+<div class="corner c-tl"></div>
+<div class="corner c-tr"></div>
+<div class="corner c-bl"></div>
+<div class="corner c-br"></div>
 
 <!-- 登录页 -->
 <div id="loginScreen">
   <div class="login-logo">HOU</div>
-  <div class="login-sub">AI · 商业决策引擎</div>
+  <div class="login-sub">
+    <span class="line1">你的赛博资本家分身</span>
+    <span class="line2">为你量身定制的变强工具</span>
+  </div>
   <div class="login-card">
     <div class="login-label">访问密码</div>
     <input type="password" id="pwdInput" placeholder="••••••••" />
@@ -277,14 +333,15 @@
   const canvas = document.getElementById('particles');
   const ctx = canvas.getContext('2d');
   let W, H, pts;
-  const N = 80, MAX_DIST = 130;
+  const N = 130, MAX_DIST = 150;
 
   function resize(){ W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
   function init(){
-    pts = Array.from({length:N}, ()=>({
+    pts = Array.from({length:N}, (_,i)=>({
       x: Math.random()*W, y: Math.random()*H,
-      vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
-      r: Math.random()*1.5+.5
+      vx: (Math.random()-.5)*.45, vy: (Math.random()-.5)*.45,
+      r: Math.random()*1.8+.5,
+      blue: i < N*0.3
     }));
   }
   function draw(){
@@ -295,18 +352,30 @@
       if(p.y<0||p.y>H) p.vy*=-1;
       ctx.beginPath();
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,69,0,0.5)';
+      ctx.fillStyle = p.blue ? 'rgba(0,212,255,0.6)' : 'rgba(255,69,0,0.55)';
       ctx.fill();
+      if(p.r > 1.4){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r*2.5,0,Math.PI*2);
+        ctx.fillStyle = p.blue ? 'rgba(0,212,255,0.08)' : 'rgba(255,69,0,0.08)';
+        ctx.fill();
+      }
     });
     for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
       const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
       const d=Math.sqrt(dx*dx+dy*dy);
       if(d<MAX_DIST){
+        const a = .22*(1-d/MAX_DIST);
+        const mixed = pts[i].blue !== pts[j].blue;
         ctx.beginPath();
         ctx.moveTo(pts[i].x,pts[i].y);
         ctx.lineTo(pts[j].x,pts[j].y);
-        ctx.strokeStyle=`rgba(255,69,0,${.18*(1-d/MAX_DIST)})`;
-        ctx.lineWidth=.5;
+        ctx.strokeStyle = mixed
+          ? `rgba(128,180,200,${a*0.8})`
+          : pts[i].blue
+            ? `rgba(0,212,255,${a})`
+            : `rgba(255,69,0,${a})`;
+        ctx.lineWidth = .6;
         ctx.stroke();
       }
     }
