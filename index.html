@@ -33,36 +33,33 @@
     #loginScreen {
       position: fixed; inset: 0; z-index: 10;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center; justify-content: space-between;
+      padding: 8vh 0 7vh;
     }
+    .login-top { display: flex; flex-direction: column; align-items: center; gap: 0; }
     .login-tag {
-      font-size: 17px; font-weight: 700; letter-spacing: 6px;
-      text-transform: uppercase; margin-bottom: 18px; color: #fff;
-      text-shadow: 0 0 20px rgba(0,212,255,0.8), 0 0 40px rgba(0,212,255,0.4);
-      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; font-weight: 400; letter-spacing: 5px;
+      text-transform: uppercase; margin-bottom: 14px;
+      color: rgba(255,255,255,0.32);
     }
-    .login-tag::before, .login-tag::after {
-      content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5));
-    }
-    .login-tag::after { background: linear-gradient(90deg, rgba(0,212,255,0.5), transparent); }
     .login-logo {
-      font-size: 100px; font-weight: 900; letter-spacing: -6px;
+      font-size: 72px; font-weight: 900; letter-spacing: -4px;
       background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 50px rgba(255,69,0,0.6));
-      line-height: 1; margin-bottom: 6px;
+      filter: drop-shadow(0 0 40px rgba(255,69,0,0.55));
+      line-height: 1;
       animation: logoGlow 3s ease-in-out infinite alternate;
     }
     @keyframes logoGlow {
-      from { filter: drop-shadow(0 0 30px rgba(255,69,0,0.4)); }
-      to   { filter: drop-shadow(0 0 70px rgba(255,140,0,0.7)); }
+      from { filter: drop-shadow(0 0 24px rgba(255,69,0,0.40)); }
+      to   { filter: drop-shadow(0 0 60px rgba(255,140,0,0.65)); }
     }
+    .login-bottom { display: flex; flex-direction: column; align-items: center; }
     .login-sub {
-      color: #3a3a50; font-size: 12px; letter-spacing: 2px;
-      margin-bottom: 56px; text-align: center; line-height: 1.8;
+      color: rgba(255,255,255,0.20); font-size: 11px; letter-spacing: 2px;
+      margin-bottom: 18px; text-align: center; line-height: 1.8;
     }
-    .login-sub .line2 { display: block; font-size: 14px; color: #4a4a62; letter-spacing: 2px; }
+    .login-sub .line2 { display: block; font-size: 12px; color: rgba(255,255,255,0.22); letter-spacing: 2px; }
     .login-card {
       background: rgba(4,8,18,0.72); backdrop-filter: blur(36px) saturate(1.2);
       border: 1px solid rgba(255,255,255,0.07); border-radius: 20px;
@@ -399,16 +396,20 @@
 
 <!-- 登录页 -->
 <div id="loginScreen">
-  <div class="login-tag">你的赛博资本家分身</div>
-  <div class="login-logo">HOU</div>
-  <div class="login-sub">
-    <span class="line2">为你量身定制的变强工具</span>
+  <div class="login-top">
+    <div class="login-tag">你的赛博资本家分身</div>
+    <div class="login-logo">HOU</div>
   </div>
-  <div class="login-card">
+  <div class="login-bottom">
+    <div class="login-sub">
+      <span class="line2">为你量身定制的变强工具</span>
+    </div>
+    <div class="login-card">
     <div class="login-label">访问密码</div>
     <input type="password" id="pwdInput" placeholder="••••••••" />
     <div class="login-err" id="loginErr">密码错误，请重试</div>
     <button class="btn-fire" onclick="doLogin()">进入 HOU</button>
+    </div>
   </div>
 </div>
 
