@@ -325,6 +325,77 @@
     .cursor { display: inline-block; width: 2px; height: 1em; background: var(--primary); margin-left: 2px; vertical-align: text-bottom; animation: cur 0.8s step-end infinite; }
     @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
 
+    /* ── 副业诊断模态框 ── */
+    .diagnose-modal {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .diagnose-modal.show { display: flex; }
+    .diagnose-box {
+      background: var(--surface); border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 22px; padding: 36px 32px; width: 480px; max-width: 94vw;
+      box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 40px rgba(255,69,0,0.1),
+                  inset 0 1px 0 rgba(255,255,255,0.04);
+      position: relative;
+    }
+    .d-top-label {
+      font-size: 10px; letter-spacing: 4px; color: var(--primary);
+      text-transform: uppercase; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .d-top-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,69,0,0.3), transparent); }
+    .d-step-bar { display: flex; gap: 5px; margin-bottom: 26px; }
+    .d-step-dot {
+      flex: 1; height: 3px; border-radius: 3px;
+      background: var(--border); transition: background 0.3s;
+    }
+    .d-step-dot.done { background: rgba(255,69,0,0.5); }
+    .d-step-dot.active { background: linear-gradient(90deg, #FF4500, #FF8C00); box-shadow: 0 0 8px rgba(255,69,0,0.4); }
+    .d-question {
+      font-size: 17px; font-weight: 600; color: var(--text);
+      margin-bottom: 22px; line-height: 1.55; letter-spacing: 0.2px;
+    }
+    .d-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
+    .d-option {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 18px;
+      cursor: pointer; color: #8888a0; font-size: 14px;
+      transition: all 0.18s; text-align: left; line-height: 1.4;
+    }
+    .d-option:hover { border-color: rgba(255,69,0,0.4); color: var(--text); background: rgba(255,69,0,0.04); }
+    .d-option.selected {
+      border-color: var(--primary); color: var(--text);
+      background: rgba(255,69,0,0.08); box-shadow: 0 0 14px rgba(255,69,0,0.12);
+    }
+    .d-nav { display: flex; justify-content: space-between; align-items: center; }
+    .d-back {
+      background: none; border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 20px;
+      color: var(--text2); cursor: pointer; font-size: 13px; transition: all 0.2s;
+    }
+    .d-back:hover { border-color: #3a3a50; color: var(--text); }
+    .d-next {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 9px; padding: 11px 26px;
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      letter-spacing: 1px; transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(255,69,0,0.25);
+    }
+    .d-next:hover { opacity: 0.88; box-shadow: 0 0 28px rgba(255,69,0,0.4); }
+    .d-next:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+    .d-close {
+      position: absolute; top: 18px; right: 22px;
+      background: none; border: none; color: var(--text2);
+      cursor: pointer; font-size: 20px; line-height: 1; transition: color 0.2s;
+    }
+    .d-close:hover { color: var(--text); }
+    .diagnose-tag {
+      background: rgba(255,69,0,0.1); border: 1px solid rgba(255,69,0,0.3) !important;
+      color: var(--primary) !important;
+    }
+    .diagnose-tag:hover { background: rgba(255,69,0,0.18) !important; box-shadow: 0 0 14px rgba(255,69,0,0.2) !important; }
+
     /* 移动端适配 */
     @media (max-width: 680px) {
       .sidebar {
@@ -348,6 +419,21 @@
 <div class="corner c-tr"></div>
 <div class="corner c-bl"></div>
 <div class="corner c-br"></div>
+
+<!-- 副业诊断模态框 -->
+<div class="diagnose-modal" id="diagnoseModal">
+  <div class="diagnose-box">
+    <button class="d-close" onclick="closeDiagnose()">×</button>
+    <div class="d-top-label">副业诊断</div>
+    <div class="d-step-bar" id="dStepBar"></div>
+    <div class="d-question" id="dQuestion"></div>
+    <div class="d-options" id="dOptions"></div>
+    <div class="d-nav">
+      <button class="d-back" id="dBack" onclick="prevStep()">← 上一步</button>
+      <button class="d-next" id="dNext" onclick="nextStep()" disabled>继续 →</button>
+    </div>
+  </div>
+</div>
 
 <!-- 登录页 -->
 <div id="loginScreen">
@@ -449,22 +535,22 @@
 })();
 
 /* ── 系统提示词 ── */
-const SYSTEM = `你是HOU，专为商业决策和认知升级打造的AI引擎。
+const SYSTEM = `你是HOU，专为年轻人赚钱、副业和方向决策打造的AI引擎。
 
-身份：当被问到"你是什么AI""你是哪个模型"时，回答：我是HOU，一个专注于商业决策和认知升级的AI引擎，基于DeepSeek V4 Pro构建。
+身份：当被问到"你是什么AI""你是哪个模型"时，回答：我是HOU，专注于帮年轻人找到赚钱方向、做出正确决策的AI引擎，基于DeepSeek V4 Pro构建。
 
 核心能力：
-- 商业破局：帮用户找到别人看不到的突破口
-- 决策分析：把复杂问题拆成清晰选项和代价
-- 认知升级：用底层逻辑帮用户穿透表象
-- 执行转化：把模糊想法变成今天能动手的第一步
+- 副业诊断：根据用户现实情况，找到最适合的赚钱路径
+- 钱和方向：帮用户搞清楚下一步该怎么走、怎么赚
+- 决策破局：把复杂问题拆成清晰选项和代价
+- 执行落地：把模糊想法变成今天就能动手的第一步
 
 风格铁律：
-- 直接给结论，不绕弯子，不废话
-- 用数字和逻辑说话
-- 结尾给出具体的下一步行动
-- 像顶级商业顾问，不像教科书
-- 这是付费专业服务，每个回答都要让用户觉得钱花得值`;
+- 直接给结论，不废话，不绕弯子
+- 用具体数字说话，不用模糊的"可能""大约"
+- 每个回答必须有一个今天就能执行的动作
+- 像一个已经赚到钱、愿意说真话的朋友，不像教科书
+- 不许说"这取决于很多因素"——用户问什么，直接给答案`;
 
 /* ── 历史对话管理 ── */
 const STORAGE_KEY = 'hou_sessions';
@@ -594,14 +680,19 @@ async function doLogin() {
 }
 
 /* ── 聊天 ── */
-const TAGS = ['我的生意遇到瓶颈', '帮我分析这个机会', '我该如何做决策', '帮我突破认知'];
+const TAGS = [
+  { label: '副业诊断', cls: 'diagnose-tag', action: "openDiagnose()" },
+  { label: '帮我找赚钱方向', cls: '', action: "quickSend('我想找一个适合自己的赚钱方向，根据我的情况帮我分析')" },
+  { label: '生意遇到瓶颈', cls: '', action: "quickSend('我的生意遇到了瓶颈，帮我找突破口')" },
+  { label: '帮我做一个决策', cls: '', action: "quickSend('我面临一个重要决策，帮我分析利弊和建议')" },
+];
 
 function showEmpty() {
   const m = document.getElementById('messages');
   m.innerHTML = '';
   const h = document.createElement('div');
   h.className = 'empty-hint'; h.id = 'emptyHint';
-  h.innerHTML = `<div class="empty-big">HOU</div><div class="empty-small">把你的问题告诉我</div><div class="empty-tags">${TAGS.map(t=>`<div class="tag" onclick="quickSend('${t}')">${t}</div>`).join('')}</div>`;
+  h.innerHTML = `<div class="empty-big">HOU</div><div class="empty-small">钱·副业·方向，说出来</div><div class="empty-tags">${TAGS.map(t=>`<div class="tag ${t.cls}" onclick="${t.action}">${t.label}</div>`).join('')}</div>`;
   m.appendChild(h);
 }
 
@@ -695,6 +786,113 @@ async function sendMsg() {
     loader.remove();
     addMsg('bot','网络错误，请检查连接后重试。');
   }
+}
+
+/* ── 副业诊断器 ── */
+const DIAGNOSE_QUESTIONS = [
+  {
+    q: '你现在的身份是？',
+    opts: ['在校学生', '上班族 / 打工人', '自由职业 / 兼职状态', '已经在创业']
+  },
+  {
+    q: '每周能抽出多少时间做副业？',
+    opts: ['5小时以内（碎片时间）', '5–15小时（每天1-2小时）', '15–30小时（相当于兼职）', '30小时以上，全力投入']
+  },
+  {
+    q: '启动资金大概多少？',
+    opts: ['几乎为零（纯时间换钱）', '500元以内', '500–3000元', '3000元以上，不是问题']
+  },
+  {
+    q: '你最拿得出手的能力是哪个方向？',
+    opts: ['文字 / 内容 / 表达', '设计 / 绘画 / 视频剪辑', '销售 / 运营 / 推广拉新', '技术 / 编程 / AI工具', '教学 / 服务 / 咨询', '还没想清楚']
+  },
+  {
+    q: '你最想要的结果是？',
+    opts: ['快速有收入（1个月内见到钱）', '慢慢建资产（可持续，不急）', '先验证方向，赚到了再加码']
+  }
+];
+
+let dStep = 0;
+let dAnswers = [];
+
+function openDiagnose() {
+  dStep = 0;
+  dAnswers = new Array(DIAGNOSE_QUESTIONS.length).fill(null);
+  document.getElementById('diagnoseModal').classList.add('show');
+  renderDiagnoseStep();
+}
+
+function closeDiagnose() {
+  document.getElementById('diagnoseModal').classList.remove('show');
+}
+
+function renderDiagnoseStep() {
+  const total = DIAGNOSE_QUESTIONS.length;
+  const q = DIAGNOSE_QUESTIONS[dStep];
+
+  // 进度条
+  document.getElementById('dStepBar').innerHTML = DIAGNOSE_QUESTIONS.map((_, i) =>
+    `<div class="d-step-dot ${i < dStep ? 'done' : i === dStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  // 问题
+  document.getElementById('dQuestion').textContent = q.q;
+
+  // 选项
+  document.getElementById('dOptions').innerHTML = q.opts.map((o, i) =>
+    `<button class="d-option ${dAnswers[dStep] === i ? 'selected' : ''}" onclick="selectDOption(${i})">${o}</button>`
+  ).join('');
+
+  // 导航
+  const backBtn = document.getElementById('dBack');
+  const nextBtn = document.getElementById('dNext');
+  backBtn.style.visibility = dStep === 0 ? 'hidden' : 'visible';
+  nextBtn.textContent = dStep === total - 1 ? '开始诊断 →' : '继续 →';
+  nextBtn.disabled = dAnswers[dStep] === null;
+}
+
+function selectDOption(idx) {
+  dAnswers[dStep] = idx;
+  renderDiagnoseStep();
+}
+
+function prevStep() {
+  if (dStep > 0) { dStep--; renderDiagnoseStep(); }
+}
+
+function nextStep() {
+  if (dAnswers[dStep] === null) return;
+  if (dStep < DIAGNOSE_QUESTIONS.length - 1) {
+    dStep++;
+    renderDiagnoseStep();
+  } else {
+    runDiagnose();
+  }
+}
+
+function runDiagnose() {
+  closeDiagnose();
+
+  const answers = DIAGNOSE_QUESTIONS.map((q, i) => `${q.q}${q.opts[dAnswers[i]]}`).join('\n');
+
+  const prompt = `请根据我的真实情况，给我一份专属副业诊断报告。
+
+我的情况：
+${answers}
+
+请输出：
+
+**最适合我的3条副业路径**
+每条路径包含：路径名称 / 月收入预期（给具体数字）/ 最大风险点 / 今天就能开始的第一步
+
+**本周行动清单**
+7件事，每件10分钟内能启动，按优先级排列。
+
+要求：不要泛泛建议，基于我的情况给出具体的、今天就能动手的答案。`;
+
+  const inp = document.getElementById('userInput');
+  inp.value = prompt;
+  sendMsg();
 }
 </script>
 </body>
