@@ -3,382 +3,231 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HOU · 你的赛博资本家分身</title>
-  <meta name="description" content="专为年轻人打造的AI赚钱顾问。副业诊断、决策破局、生意瓶颈，直接给答案，不废话。免费开始。">
+  <title>HOU · AI 决策顾问</title>
+  <meta name="description" content="专为年轻人打造的AI决策顾问。副业诊断、决策破局、生意瓶颈，直接给答案。">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #020204;
-      --surface: #0e0e12;
-      --surface2: #16161c;
-      --border: #1e1e28;
-      --primary: #FF4500;
-      --primary2: #FF8C00;
-      --text: #e8e8f0;
-      --text2: #44445a;
-      --text3: #7878a0;
+      --bg:      #f8fafc;
+      --surface: #ffffff;
+      --border:  #e2e8f0;
+      --text:    #1e293b;
+      --text2:   #64748b;
+      --text3:   #94a3b8;
+      --accent:  #2563eb;
+      --accent-h:#1d4ed8;
+      --success: #16a34a;
+      --danger:  #dc2626;
     }
+
     html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
     }
+
+    /* ── 按钮 ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: 500;
+      text-decoration: none; cursor: pointer; border: 1px solid transparent;
+      transition: all 0.15s ease; white-space: nowrap; line-height: 1.5;
+    }
+    .btn-primary  { background: var(--accent);  color: #fff;     border-color: var(--accent); }
+    .btn-primary:hover  { background: var(--accent-h); border-color: var(--accent-h); }
+    .btn-secondary{ background: var(--surface); color: #334155;  border-color: var(--border); }
+    .btn-secondary:hover{ background: #f1f5f9; }
+    .btn-sm { padding: 4px 10px; font-size: 13px; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── 布局 ── */
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 56px 0; border-top: 1px solid var(--border); }
+
+    .sec-label {
+      font-size: 12px; font-weight: 500; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    }
+    .sec-title {
+      font-size: 20px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.3px; margin-bottom: 8px;
+    }
+    .sec-desc { font-size: 14px; color: var(--text2); max-width: 480px; margin-bottom: 32px; }
 
     /* ── 导航 ── */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 60px; display: flex; align-items: center;
-      padding: 0 max(24px, calc(50% - 580px));
-      background: rgba(2,2,4,0.80); backdrop-filter: blur(24px);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      transition: background 0.3s;
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      height: 48px; display: flex; align-items: center; padding: 0 24px;
     }
-    .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo {
-      font-size: 22px; font-weight: 900; letter-spacing: -1.5px; text-decoration: none;
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 10px rgba(255,69,0,0.4));
+    .nav-inner {
+      width: 100%; max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-logo { font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; letter-spacing: -0.3px; }
+    .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
     .nav-links a {
-      color: var(--text3); font-size: 14px; text-decoration: none;
-      transition: color 0.2s; letter-spacing: 0.3px;
+      font-size: 14px; color: var(--text2); text-decoration: none;
+      padding: 4px 10px; border-radius: 4px; transition: all 0.15s ease;
     }
-    .nav-links a:hover { color: var(--text); }
-    .nav-right { display: flex; align-items: center; gap: 16px; }
-    .nav-login { color: var(--text3); font-size: 14px; text-decoration: none; transition: color 0.2s; }
-    .nav-login:hover { color: var(--text); }
-    .nav-cta {
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      color: #fff; text-decoration: none;
-      padding: 8px 20px; border-radius: 8px;
-      font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
-      box-shadow: 0 0 20px rgba(255,69,0,0.25);
-      transition: opacity 0.2s, box-shadow 0.2s;
-    }
-    .nav-cta:hover { opacity: 0.88; box-shadow: 0 0 28px rgba(255,69,0,0.45); }
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .nav-login { display: none; }
-    }
+    .nav-links a:hover { background: var(--bg); color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    @media (max-width: 640px) { .nav-links { display: none; } }
 
     /* ── Hero ── */
-    .hero {
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; padding: 100px 24px 80px;
-      position: relative; overflow: hidden;
-    }
-    .hero-grid {
-      position: absolute; inset: 0; z-index: 0;
-      background-image:
-        linear-gradient(rgba(255,69,0,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,69,0,0.035) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
-    }
-    .hero-glow {
-      position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
-      width: 700px; height: 400px; z-index: 0;
-      background: radial-gradient(ellipse, rgba(255,69,0,0.10) 0%, rgba(255,140,0,0.04) 50%, transparent 70%);
-      filter: blur(60px);
-    }
-    .hero-content { position: relative; z-index: 1; max-width: 740px; }
+    .hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border); }
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,69,0,0.07); border: 1px solid rgba(255,69,0,0.18);
-      border-radius: 100px; padding: 6px 18px; margin-bottom: 36px;
-      font-size: 12px; color: var(--primary2); letter-spacing: 1.5px; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border: 1px solid var(--border); border-radius: 4px;
+      font-size: 12px; color: var(--text2); margin-bottom: 20px;
     }
-    .badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--primary); box-shadow: 0 0 6px var(--primary);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.75)} }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
     .hero-title {
-      font-size: clamp(44px, 9vw, 88px);
-      font-weight: 900; letter-spacing: -3px; line-height: 1.02; margin-bottom: 24px;
-    }
-    .t1 { display: block; color: var(--text); }
-    .t2 {
-      display: block;
-      background: linear-gradient(135deg, #FF4500 0%, #FF8C00 55%, #FFB800 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 48px rgba(255,69,0,0.3));
+      font-size: 20px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.3px; line-height: 1.4; margin-bottom: 16px; max-width: 520px;
     }
     .hero-sub {
-      font-size: 18px; color: var(--text3); margin-bottom: 44px;
-      line-height: 1.75; max-width: 460px; margin-left: auto; margin-right: auto;
+      font-size: 14px; color: var(--text2); line-height: 1.65;
+      max-width: 440px; margin-bottom: 28px;
     }
-    .hero-sub strong { color: var(--text); font-weight: 600; }
-    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
-    .btn-primary {
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      color: #fff; text-decoration: none;
-      padding: 17px 40px; border-radius: 12px;
-      font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
-      box-shadow: 0 0 32px rgba(255,69,0,0.30);
-      position: relative; overflow: hidden; transition: all 0.2s;
-    }
-    .btn-primary::before {
-      content: ''; position: absolute; top: -50%; left: -60%;
-      width: 40%; height: 200%; background: rgba(255,255,255,0.14);
-      transform: skewX(-20deg); animation: shimmer 3s infinite;
-    }
-    @keyframes shimmer { 0%{left:-60%} 100%{left:140%} }
-    .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 44px rgba(255,69,0,0.50); transform: translateY(-2px); }
-    .hero-note { font-size: 13px; color: var(--text2); margin-top: 16px; letter-spacing: 0.5px; }
-    .hero-scroll {
-      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      color: var(--text2); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
-      animation: float 2.5s ease-in-out infinite;
-    }
-    @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
-    .hero-scroll::after { content: '↓'; font-size: 14px; }
+    .hero-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .hero-note { font-size: 12px; color: var(--text3); }
 
-    /* ── 公共 section ── */
-    .s { padding: 88px max(24px, calc(50% - 580px)); }
-    .s-label {
-      font-size: 11px; letter-spacing: 4px; color: var(--primary);
-      text-transform: uppercase; margin-bottom: 14px;
-      display: flex; align-items: center; gap: 10px;
+    /* ── 功能卡片 ── */
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0; background: var(--border);
+      border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
     }
-    .s-label::after { content:''; width:32px; height:1px; background:var(--primary); opacity:0.4; }
-    .s-title {
-      font-size: clamp(28px, 4.5vw, 44px);
-      font-weight: 800; letter-spacing: -1.5px; line-height: 1.12;
-      margin-bottom: 14px;
-    }
-    .s-sub { font-size: 16px; color: var(--text3); line-height: 1.75; margin-bottom: 52px; max-width: 460px; }
-
-    /* ── Features ── */
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;
-    }
-    .f-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px; padding: 30px 26px;
-      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
-      position: relative; overflow: hidden;
-    }
-    .f-card::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,69,0,0.04) 0%, transparent 55%);
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .f-card:hover {
-      border-color: rgba(255,69,0,0.22); transform: translateY(-3px);
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 28px rgba(255,69,0,0.07);
-    }
-    .f-card:hover::after { opacity: 1; }
-    .f-icon {
-      width: 46px; height: 46px; border-radius: 12px;
-      background: rgba(255,69,0,0.09); border: 1px solid rgba(255,69,0,0.18);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 18px; position: relative; z-index: 1;
-    }
-    .f-icon svg { width: 22px; height: 22px; stroke: var(--primary); }
-    .f-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; position: relative; z-index: 1; }
-    .f-desc { font-size: 14px; color: var(--text3); line-height: 1.75; position: relative; z-index: 1; }
+    .feature-card { background: var(--surface); padding: 20px; }
+    @media (min-width: 641px) { .feature-card + .feature-card { border-left: 1px solid var(--border); } }
+    @media (max-width: 640px) { .feature-card + .feature-card { border-top: 1px solid var(--border); } }
+    .f-icon { color: var(--text2); margin-bottom: 12px; }
+    .f-icon svg { width: 20px; height: 20px; display: block; }
+    .f-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .f-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
     .f-tag {
-      display: inline-block; margin-top: 18px;
-      background: rgba(255,69,0,0.07); border: 1px solid rgba(255,69,0,0.13);
-      border-radius: 100px; padding: 3px 12px;
-      font-size: 11px; color: var(--primary2); letter-spacing: 0.5px;
-      position: relative; z-index: 1;
+      display: inline-block; margin-top: 12px;
+      padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px;
+      font-size: 11px; color: var(--text2);
     }
 
-    /* ── How it works ── */
-    .how-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0;
+    /* ── Benchmark 表格 ── */
+    .table-wrap { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; overflow-x: auto; }
+    .bench-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    .bench-table th {
+      padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 500;
+      color: var(--text2); background: var(--bg); border-bottom: 1px solid var(--border);
     }
-    .how-step {
-      padding: 28px; border: 1px solid var(--border); margin: -1px -1px 0 0;
-      position: relative;
+    .bench-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .bench-table tbody tr:last-child td { border-bottom: none; }
+    .bench-table tbody tr:hover td { background: #fafafa; }
+    .metric-name { font-size: 13px; font-weight: 500; color: var(--text); display: block; }
+    .metric-src  { font-size: 11px; color: var(--text3); display: block; margin-top: 2px; }
+    .bar-group { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; }
+    .bar-brand { width: 60px; text-align: right; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+    .bar-track {
+      flex: 1; height: 8px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 2px; overflow: hidden;
     }
-    .how-step:first-child { border-radius: 14px 0 0 14px; }
-    .how-step:last-child { border-radius: 0 14px 14px 0; }
-    .how-num {
-      font-size: 11px; letter-spacing: 3px; color: var(--primary);
-      margin-bottom: 14px; font-weight: 700;
-    }
-    .how-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-    .how-desc { font-size: 13px; color: var(--text3); line-height: 1.7; }
-    @media (max-width: 640px) {
-      .how-step:first-child { border-radius: 14px 14px 0 0; }
-      .how-step:last-child { border-radius: 0 0 14px 14px; }
+    .bar-fill { height: 100%; border-radius: 2px; }
+    .bar-fill.hou { background: var(--accent); }
+    .bar-fill.gpt { background: #94a3b8; }
+    .bar-score { width: 34px; font-size: 12px; font-weight: 500; color: var(--text); flex-shrink: 0; }
+    .bar-score.dim { color: var(--text2); }
+    .delta {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px; border-radius: 4px; font-size: 12px; font-weight: 500;
+      background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0;
+      white-space: nowrap;
     }
 
-    /* ── Pricing ── */
-    #pricing {
-      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, transparent 0%, rgba(255,69,0,0.015) 50%, transparent 100%);
+    /* ── 步骤 ── */
+    .steps { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; max-width: 640px; }
+    .step { display: flex; gap: 16px; padding: 20px; background: var(--surface); }
+    .step + .step { border-top: 1px solid var(--border); }
+    .step-num {
+      width: 24px; height: 24px; flex-shrink: 0;
+      border: 1px solid var(--border); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--text2); margin-top: 1px;
     }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .step-desc  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* ── 定价 ── */
     .pricing-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 380px));
-      gap: 20px; justify-content: center;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+      gap: 16px;
     }
     .p-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 36px 30px; position: relative;
+      border-radius: 4px; padding: 24px;
     }
-    .p-card.pro {
-      border-color: rgba(255,69,0,0.35);
-      box-shadow: 0 0 60px rgba(255,69,0,0.08), inset 0 1px 0 rgba(255,255,255,0.03);
-    }
+    .p-card.featured { border-color: var(--accent); }
     .p-badge {
-      position: absolute; top: 20px; right: 20px;
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      color: #fff; font-size: 10px; font-weight: 800;
-      padding: 4px 12px; border-radius: 100px; letter-spacing: 1.5px;
+      display: inline-flex; align-items: center; margin-bottom: 12px;
+      padding: 2px 8px; background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 4px; font-size: 11px; font-weight: 500; color: var(--accent);
     }
-    .p-name { font-size: 12px; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
-    .p-price { line-height: 1; margin-bottom: 6px; }
-    .p-price .sym { font-size: 22px; font-weight: 700; vertical-align: top; margin-top: 10px; display: inline-block; }
-    .p-price .num { font-size: 56px; font-weight: 900; letter-spacing: -4px; }
-    .p-price .per { font-size: 15px; font-weight: 400; color: var(--text3); }
-    .p-card.pro .p-price .num, .p-card.pro .p-price .sym {
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .p-desc { font-size: 13px; color: var(--text3); margin: 12px 0 24px; line-height: 1.65; }
-    .p-btn {
-      display: block; width: 100%; padding: 14px;
-      border-radius: 10px; text-align: center; text-decoration: none;
-      font-size: 15px; font-weight: 700; letter-spacing: 0.5px; transition: all 0.2s;
-    }
-    .p-btn.free { background: transparent; border: 1px solid var(--border); color: var(--text3); }
-    .p-btn.free:hover { border-color: rgba(255,69,0,0.25); color: var(--text); }
-    .p-btn.pro-btn {
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      border: none; color: #fff; box-shadow: 0 0 20px rgba(255,69,0,0.28);
-    }
-    .p-btn.pro-btn:hover { opacity: 0.88; box-shadow: 0 0 32px rgba(255,69,0,0.48); }
-    .p-divider { height: 1px; background: var(--border); margin: 26px 0; }
-    .p-features { display: flex; flex-direction: column; gap: 12px; }
-    .p-feat { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text3); }
-    .chk {
-      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
-      display: flex; align-items: center; justify-content: center; font-size: 10px;
-    }
-    .chk.y { background: rgba(255,69,0,0.12); color: var(--primary); border: 1px solid rgba(255,69,0,0.22); }
-    .chk.n { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-    .p-feat.dim { color: var(--text2); }
-
-    /* ── Benchmark ── */
-    .bench-wrap { display: flex; flex-direction: column; gap: 28px; max-width: 780px; }
-    .bench-row { }
-    .bench-meta {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 10px;
-    }
-    .bench-name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
-    .bench-src { font-size: 11px; color: var(--text2); letter-spacing: 0.5px; }
-    .bench-bars { display: flex; flex-direction: column; gap: 8px; }
-    .bench-track {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .bench-brand { width: 90px; flex-shrink: 0; font-size: 11px; letter-spacing: 0.5px; color: var(--text3); text-align: right; }
-    .bench-bg {
-      flex: 1; height: 32px; background: var(--surface2);
-      border-radius: 6px; overflow: hidden; position: relative;
-    }
-    .bench-fill {
-      height: 100%; border-radius: 6px; width: 0;
-      transition: width 1.1s cubic-bezier(0.22,1,0.36,1);
-      display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
-      font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap;
-      position: relative;
-    }
-    .bench-fill.hou {
-      background: linear-gradient(90deg, #c43300, #FF4500 40%, #FF8C00);
-      box-shadow: 0 0 20px rgba(255,69,0,0.35);
-    }
-    .bench-fill.gpt {
-      background: linear-gradient(90deg, #2a2a36, #3a3a4e);
-    }
-    .bench-note { margin-top: 20px; font-size: 11px; color: var(--text2); letter-spacing: 0.5px; }
-    .bench-legend {
-      display: flex; gap: 24px; margin-bottom: 36px;
-    }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); }
-    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
-    .legend-dot.hou { background: linear-gradient(135deg, #FF4500, #FF8C00); }
-    .legend-dot.gpt { background: #3a3a4e; border: 1px solid #555; }
+    .p-plan { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .p-price { font-size: 28px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
+    .p-price .period { font-size: 14px; font-weight: 400; color: var(--text2); }
+    .p-desc { font-size: 13px; color: var(--text2); margin: 12px 0 20px; line-height: 1.6; }
+    .p-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .p-feats { display: flex; flex-direction: column; gap: 10px; }
+    .p-feat { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+    .p-feat svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+    .p-feat.yes { color: var(--text2); }
+    .p-feat.yes svg { color: var(--success); }
+    .p-feat.no  { color: var(--text3); }
+    .p-feat.no svg { color: var(--border); }
 
     /* ── FAQ ── */
-    .faq-list { max-width: 660px; }
-    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-wrap { max-width: 640px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .faq-item { background: var(--surface); }
+    .faq-item + .faq-item { border-top: 1px solid var(--border); }
     .faq-btn {
       width: 100%; background: none; border: none; cursor: pointer;
-      padding: 22px 0; text-align: left;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      color: var(--text); font-size: 15px; font-weight: 600; line-height: 1.45;
-      transition: color 0.2s;
+      padding: 14px 16px; text-align: left;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      font-size: 14px; font-weight: 500; color: var(--text); transition: background 0.15s ease;
     }
-    .faq-btn:hover { color: var(--primary2); }
-    .faq-plus {
-      width: 24px; height: 24px; flex-shrink: 0;
-      border: 1px solid var(--border); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; color: var(--text2); transition: all 0.3s; line-height: 1;
+    .faq-btn:hover { background: var(--bg); }
+    .faq-chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--text3); transition: transform 0.15s ease; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.2s ease; }
+    .faq-item.open .faq-body { max-height: 220px; }
+    .faq-inner {
+      padding: 12px 16px 16px; font-size: 13px; color: var(--text2);
+      line-height: 1.65; border-top: 1px solid var(--border);
     }
-    .faq-item.open .faq-plus { transform: rotate(45deg); border-color: rgba(255,69,0,0.3); color: var(--primary); }
-    .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
-    .faq-item.open .faq-body { max-height: 180px; }
-    .faq-inner { padding: 0 0 22px; font-size: 14px; color: var(--text3); line-height: 1.8; }
 
-    /* ── Final CTA ── */
-    .cta-final {
-      text-align: center;
-      padding: 100px max(24px, calc(50% - 580px));
-      position: relative; overflow: hidden;
+    /* ── CTA ── */
+    .cta-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px; padding: 40px 32px;
     }
-    .cta-final::before {
-      content: ''; position: absolute; inset: 0; z-index: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,69,0,0.06) 0%, transparent 70%);
-    }
-    .cta-final > * { position: relative; z-index: 1; }
-    .cta-final .s-title { max-width: 500px; margin: 0 auto 14px; }
-    .cta-final .s-sub { margin: 0 auto 40px; }
+    .cta-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .cta-sub   { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+    .cta-note  { margin-top: 8px; font-size: 12px; color: var(--text3); }
 
     /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 36px max(24px, calc(50% - 580px));
+    footer { border-top: 1px solid var(--border); padding: 24px 0; }
+    .footer-inner {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 20px;
+      flex-wrap: wrap; gap: 16px;
     }
-    .f-logo {
-      font-size: 18px; font-weight: 900; letter-spacing: -1px;
-      background: linear-gradient(135deg, #FF4500, #FF8C00);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .f-links { display: flex; gap: 22px; list-style: none; flex-wrap: wrap; }
-    .f-links a { font-size: 13px; color: var(--text2); text-decoration: none; transition: color 0.2s; }
-    .f-links a:hover { color: var(--text3); }
-    .f-copy { font-size: 13px; color: var(--text2); }
-
-    /* ── Scroll Reveal ── */
-    .sr {
-      opacity: 0;
-      transition: opacity 0.48s ease-out, transform 0.48s ease-out;
-      will-change: opacity, transform;
-    }
-    .sr.from-left  { transform: translateX(-72px) translateZ(0); }
-    .sr.from-right { transform: translateX(72px) translateZ(0); }
-    .sr.from-bottom{ transform: translateY(36px) translateZ(0); }
-    .sr.in {
-      opacity: 1;
-      transform: translate(0, 0) translateZ(0) !important;
-    }
-    .hero-content { opacity: 1 !important; transform: none !important; }
+    .footer-logo { font-size: 14px; font-weight: 600; color: var(--text); }
+    .footer-links { display: flex; gap: 16px; list-style: none; flex-wrap: wrap; }
+    .footer-links a { font-size: 13px; color: var(--text2); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 12px; color: var(--text3); }
   </style>
 </head>
 <body>
@@ -389,303 +238,368 @@
     <a href="/" class="nav-logo">HOU</a>
     <ul class="nav-links">
       <li><a href="#features">功能</a></li>
+      <li><a href="#benchmark">性能</a></li>
       <li><a href="#how">使用方式</a></li>
       <li><a href="#pricing">定价</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
-      <a href="/chat" class="nav-login">登录</a>
-      <a href="/chat" class="nav-cta">免费开始</a>
+      <a href="/chat" class="btn btn-secondary btn-sm">登录</a>
+      <a href="/chat" class="btn btn-primary btn-sm">免费开始</a>
     </div>
   </div>
 </nav>
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-glow"></div>
-  <div class="hero-content">
+  <div class="container">
     <div class="hero-badge">
-      <div class="badge-dot"></div>
-      基于 DeepSeek V4 Pro · 深度调优
+      <span class="badge-dot"></span>
+      基于 DeepSeek V4 Pro · 中文决策场景调优
     </div>
-    <h1 class="hero-title">
-      <span class="t1">不知道下一步</span>
-      <span class="t2">怎么赚钱？</span>
-    </h1>
+    <h1 class="hero-title">不知道下一步怎么赚钱？</h1>
     <p class="hero-sub">
-      HOU 是专为年轻人打造的 AI 赚钱顾问。<br>
-      <strong>副业 · 方向 · 生意决策</strong>，说出来，直接给答案。
+      HOU 是专为年轻人打造的 AI 决策顾问。<br>
+      副业诊断、方向选择、生意瓶颈——说出来，直接给答案。
     </p>
     <div class="hero-actions">
-      <a href="/chat" class="btn-primary">免费开始使用</a>
+      <a href="/chat" class="btn btn-primary">免费开始使用</a>
+      <a href="#pricing" class="btn btn-secondary">查看定价</a>
     </div>
-    <p class="hero-note">每天 10 次对话免费 · 无需信用卡</p>
+    <p class="hero-note">每天 10 次对话免费 · 无需信用卡 · 随时取消</p>
   </div>
-  <div class="hero-scroll">向下探索</div>
 </div>
 
-<!-- Features -->
-<section class="s" id="features">
-  <div class="s-label">核心能力</div>
-  <h2 class="s-title">比朋友更懂赚钱的 AI</h2>
-  <p class="s-sub">不是通用 AI。为年轻人的真实场景深度调优，每条回答必须有今天能执行的第一步。</p>
-  <div class="features-grid">
-    <div class="f-card">
-      <div class="f-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
-          <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-        </svg>
+<!-- 功能 -->
+<section id="features">
+  <div class="container">
+    <div class="sec-label">核心功能</div>
+    <h2 class="sec-title">三个高频场景，直接给答案</h2>
+    <p class="sec-desc">不是通用 AI。专为副业、决策、生意场景调优，每条回答必须有今天可执行的第一步。</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>
+            <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+          </svg>
+        </div>
+        <div class="f-name">副业精准诊断</div>
+        <div class="f-desc">输入你的时间、资金和技能，匹配最适合的赚钱路径，附月收入预期和今天的第一步。</div>
+        <span class="f-tag">诊断引擎</span>
       </div>
-      <div class="f-title">副业精准诊断</div>
-      <div class="f-desc">5 个问题，结合你的时间、资金、技能，精准匹配最适合你的赚钱路径，附月收入预期和今天的第一步。</div>
-      <div class="f-tag">AI 诊断系统</div>
-    </div>
-    <div class="f-card">
-      <div class="f-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
+      <div class="feature-card">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="f-name">决策破局</div>
+        <div class="f-desc">把复杂选择拆成清晰的选项和代价。不说"这取决于"——直接给建议，带具体数字。</div>
+        <span class="f-tag">决策引擎</span>
       </div>
-      <div class="f-title">决策破局</div>
-      <div class="f-desc">把你面临的复杂选择拆成清晰的选项和代价。不说"这取决于"，直接给建议和理由，带具体数字。</div>
-      <div class="f-tag">决策引擎</div>
-    </div>
-    <div class="f-card">
-      <div class="f-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-          <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
-        </svg>
+      <div class="feature-card">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+        </div>
+        <div class="f-name">生意顾问</div>
+        <div class="f-desc">瓶颈、定价、渠道、突破口。像一个已经赚到钱、愿意说真话的合伙人。</div>
+        <span class="f-tag">生意诊断</span>
       </div>
-      <div class="f-title">生意顾问</div>
-      <div class="f-desc">遇到瓶颈、找突破口、定价策略、找渠道。像一个已经赚到钱、愿意说真话的合伙人。</div>
-      <div class="f-tag">生意诊断</div>
     </div>
   </div>
 </section>
 
 <!-- Benchmark -->
-<section class="s" id="benchmark" style="padding-top:0;">
-  <div class="s-label">数据说话</div>
-  <h2 class="s-title">为什么选 DeepSeek V4 Pro</h2>
-  <p class="s-sub">HOU 选用了在中文推理、数学和代码能力上全面领先的模型，而非最贵的那个。</p>
-  <div class="bench-legend">
-    <div class="legend-item"><div class="legend-dot hou"></div>DeepSeek V4 Pro（HOU 使用）</div>
-    <div class="legend-item"><div class="legend-dot gpt"></div>GPT-4o</div>
+<section id="benchmark">
+  <div class="container">
+    <div class="sec-label">性能数据</div>
+    <h2 class="sec-title">为什么选 DeepSeek V4 Pro</h2>
+    <p class="sec-desc">HOU 选用了在中文理解和数学推理上领先的模型，而非最贵的。以下为公开基准测评数据。</p>
+    <div class="table-wrap">
+      <table class="bench-table">
+        <thead>
+          <tr>
+            <th style="width:200px">评测指标</th>
+            <th>分数对比</th>
+            <th style="width:80px">差值</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span class="metric-name">中文语言理解</span>
+              <span class="metric-src">C-Eval Benchmark</span>
+            </td>
+            <td>
+              <div class="bar-group">
+                <div class="bar-row">
+                  <span class="bar-brand">DeepSeek</span>
+                  <div class="bar-track"><div class="bar-fill hou" style="width:91%"></div></div>
+                  <span class="bar-score">91.0</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-brand">GPT-4o</span>
+                  <div class="bar-track"><div class="bar-fill gpt" style="width:79.2%"></div></div>
+                  <span class="bar-score dim">79.2</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="delta">+11.8</span></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="metric-name">数学推理</span>
+              <span class="metric-src">MATH-500 Benchmark</span>
+            </td>
+            <td>
+              <div class="bar-group">
+                <div class="bar-row">
+                  <span class="bar-brand">DeepSeek</span>
+                  <div class="bar-track"><div class="bar-fill hou" style="width:96.4%"></div></div>
+                  <span class="bar-score">96.4</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-brand">GPT-4o</span>
+                  <div class="bar-track"><div class="bar-fill gpt" style="width:74.6%"></div></div>
+                  <span class="bar-score dim">74.6</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="delta">+21.8</span></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="metric-name">综合知识推理</span>
+              <span class="metric-src">MMLU Benchmark</span>
+            </td>
+            <td>
+              <div class="bar-group">
+                <div class="bar-row">
+                  <span class="bar-brand">DeepSeek</span>
+                  <div class="bar-track"><div class="bar-fill hou" style="width:88.5%"></div></div>
+                  <span class="bar-score">88.5</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-brand">GPT-4o</span>
+                  <div class="bar-track"><div class="bar-fill gpt" style="width:87.2%"></div></div>
+                  <span class="bar-score dim">87.2</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="delta">+1.3</span></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="metric-name">代码生成</span>
+              <span class="metric-src">HumanEval Benchmark</span>
+            </td>
+            <td>
+              <div class="bar-group">
+                <div class="bar-row">
+                  <span class="bar-brand">DeepSeek</span>
+                  <div class="bar-track"><div class="bar-fill hou" style="width:92.7%"></div></div>
+                  <span class="bar-score">92.7</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-brand">GPT-4o</span>
+                  <div class="bar-track"><div class="bar-fill gpt" style="width:90.2%"></div></div>
+                  <span class="bar-score dim">90.2</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="delta">+2.5</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:10px;font-size:11px;color:var(--text3)">数据来源：DeepSeek V3 技术报告（公开基准测评）· 实际表现因场景而异</p>
   </div>
-  <div class="bench-wrap" id="benchWrap">
-    <div class="bench-row">
-      <div class="bench-meta">
-        <span class="bench-name">中文语言理解</span>
-        <span class="bench-src">C-Eval Benchmark</span>
-      </div>
-      <div class="bench-bars">
-        <div class="bench-track">
-          <div class="bench-brand">DeepSeek</div>
-          <div class="bench-bg"><div class="bench-fill hou" data-val="91">91.0%</div></div>
-        </div>
-        <div class="bench-track">
-          <div class="bench-brand">GPT-4o</div>
-          <div class="bench-bg"><div class="bench-fill gpt" data-val="79.2">79.2%</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="bench-row">
-      <div class="bench-meta">
-        <span class="bench-name">数学推理能力</span>
-        <span class="bench-src">MATH-500 Benchmark</span>
-      </div>
-      <div class="bench-bars">
-        <div class="bench-track">
-          <div class="bench-brand">DeepSeek</div>
-          <div class="bench-bg"><div class="bench-fill hou" data-val="96.4">96.4%</div></div>
-        </div>
-        <div class="bench-track">
-          <div class="bench-brand">GPT-4o</div>
-          <div class="bench-bg"><div class="bench-fill gpt" data-val="74.6">74.6%</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="bench-row">
-      <div class="bench-meta">
-        <span class="bench-name">综合知识推理</span>
-        <span class="bench-src">MMLU Benchmark</span>
-      </div>
-      <div class="bench-bars">
-        <div class="bench-track">
-          <div class="bench-brand">DeepSeek</div>
-          <div class="bench-bg"><div class="bench-fill hou" data-val="88.5">88.5%</div></div>
-        </div>
-        <div class="bench-track">
-          <div class="bench-brand">GPT-4o</div>
-          <div class="bench-bg"><div class="bench-fill gpt" data-val="87.2">87.2%</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="bench-row">
-      <div class="bench-meta">
-        <span class="bench-name">代码生成能力</span>
-        <span class="bench-src">HumanEval Benchmark</span>
-      </div>
-      <div class="bench-bars">
-        <div class="bench-track">
-          <div class="bench-brand">DeepSeek</div>
-          <div class="bench-bg"><div class="bench-fill hou" data-val="92.7">92.7%</div></div>
-        </div>
-        <div class="bench-track">
-          <div class="bench-brand">GPT-4o</div>
-          <div class="bench-bg"><div class="bench-fill gpt" data-val="90.2">90.2%</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <p class="bench-note">数据来源：公开学术基准测评（DeepSeek V3 技术报告）· 实际表现因场景而异</p>
 </section>
 
-<!-- How it works -->
-<section class="s" id="how" style="padding-top:0;">
-  <div class="s-label">使用方式</div>
-  <h2 class="s-title">三步，直接拿到答案</h2>
-  <p class="s-sub">不需要学习，不需要调教，说你的情况，HOU 给你路径。</p>
-  <div class="how-grid">
-    <div class="how-step">
-      <div class="how-num">01</div>
-      <div class="how-title">说出你的情况</div>
-      <div class="how-desc">不需要完整描述，说核心困惑就够——时间、资金、卡在哪里。</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">02</div>
-      <div class="how-title">HOU 直接分析</div>
-      <div class="how-desc">基于真实情况，给出结论、原因和风险，不废话，不绕弯子。</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">03</div>
-      <div class="how-title">拿到今天的第一步</div>
-      <div class="how-desc">每条建议必须包含一个今天就能启动的具体动作，不是方向，是行动。</div>
+<!-- 使用方式 -->
+<section id="how">
+  <div class="container">
+    <div class="sec-label">使用方式</div>
+    <h2 class="sec-title">三步拿到答案</h2>
+    <p class="sec-desc">不需要调教模型，说你的情况，HOU 给你路径。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">说出你的情况</div>
+          <div class="step-desc">不需要完整描述，说核心困惑就够——时间、资金、卡在哪里。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">HOU 直接分析</div>
+          <div class="step-desc">基于真实情况给出结论、原因和风险，不废话，不绕弯子。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">拿到今天的第一步</div>
+          <div class="step-desc">每条建议必须包含一个今天就能启动的具体动作，不是方向，是行动。</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Pricing -->
-<section class="s" id="pricing">
-  <div class="s-label">定价</div>
-  <h2 class="s-title">简单透明，按需选择</h2>
-  <p class="s-sub">免费版够用来试，Pro 版够用来认真赚钱。</p>
-  <div class="pricing-grid">
-    <div class="p-card">
-      <div class="p-name">免费版</div>
-      <div class="p-price">
-        <span class="sym">¥</span><span class="num">0</span><span class="per"> / 永久</span>
+<!-- 定价 -->
+<section id="pricing">
+  <div class="container">
+    <div class="sec-label">定价</div>
+    <h2 class="sec-title">简单透明，按需选择</h2>
+    <p class="sec-desc">免费版够用来试，Pro 版够用来认真赚钱。</p>
+    <div class="pricing-grid">
+      <div class="p-card">
+        <div class="p-plan">免费版</div>
+        <div class="p-price">¥0 <span class="period">/ 永久</span></div>
+        <p class="p-desc">先试试，感受 HOU 和普通 AI 的差距。</p>
+        <a href="/chat" class="btn btn-secondary btn-full">免费开始</a>
+        <div class="p-divider"></div>
+        <div class="p-feats">
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            每天 10 次对话
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            副业精准诊断
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            决策破局分析
+          </div>
+          <div class="p-feat no">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            无限次对话
+          </div>
+          <div class="p-feat no">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            优先响应速度
+          </div>
+        </div>
       </div>
-      <p class="p-desc">先试试，感受 HOU 和普通 AI 的差距。</p>
-      <a href="/chat" class="p-btn free">免费开始</a>
-      <div class="p-divider"></div>
-      <div class="p-features">
-        <div class="p-feat"><div class="chk y">✓</div>每天 10 次对话</div>
-        <div class="p-feat"><div class="chk y">✓</div>副业精准诊断</div>
-        <div class="p-feat"><div class="chk y">✓</div>决策破局分析</div>
-        <div class="p-feat dim"><div class="chk n">—</div>无限次对话</div>
-        <div class="p-feat dim"><div class="chk n">—</div>优先响应速度</div>
-        <div class="p-feat dim"><div class="chk n">—</div>全部未来新功能</div>
-      </div>
-    </div>
-    <div class="p-card pro">
-      <div class="p-badge">PRO</div>
-      <div class="p-name">Pro 版</div>
-      <div class="p-price">
-        <span class="sym">¥</span><span class="num">9.9</span><span class="per"> / 月</span>
-      </div>
-      <p class="p-desc">认真赚钱，不设限。每天都在用的人选 Pro。</p>
-      <a href="/chat" class="p-btn pro-btn">立即升级</a>
-      <div class="p-divider"></div>
-      <div class="p-features">
-        <div class="p-feat"><div class="chk y">✓</div>无限次对话</div>
-        <div class="p-feat"><div class="chk y">✓</div>副业精准诊断</div>
-        <div class="p-feat"><div class="chk y">✓</div>决策破局分析</div>
-        <div class="p-feat"><div class="chk y">✓</div>优先响应速度</div>
-        <div class="p-feat"><div class="chk y">✓</div>全部未来新功能</div>
-        <div class="p-feat"><div class="chk y">✓</div>支持微信支付</div>
+      <div class="p-card featured">
+        <div class="p-badge">推荐</div>
+        <div class="p-plan">Pro 版</div>
+        <div class="p-price">¥9.9 <span class="period">/ 月</span></div>
+        <p class="p-desc">认真赚钱，不设限。每天都在用的人选 Pro。</p>
+        <a href="/chat" class="btn btn-primary btn-full">立即升级</a>
+        <div class="p-divider"></div>
+        <div class="p-feats">
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            无限次对话
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            副业精准诊断
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            决策破局分析
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            优先响应速度
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            全部未来新功能
+          </div>
+          <div class="p-feat yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            支持微信支付
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="s" id="faq">
-  <div class="s-label">常见问题</div>
-  <h2 class="s-title">还有疑问？</h2>
-  <p class="s-sub">没找到答案就直接在聊天里问 HOU。</p>
-  <div class="faq-list">
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)">
-        HOU 是什么 AI？和 ChatGPT 有什么区别？
-        <span class="faq-plus">+</span>
-      </button>
-      <div class="faq-body">
-        <div class="faq-inner">HOU 基于 DeepSeek V4 Pro 构建，专为年轻人赚钱、副业和方向决策深度调优。区别在于：ChatGPT 是通用 AI，HOU 是专属决策引擎。每条回答必须有具体数字和今天就能执行的第一步，不说废话，不绕弯子。</div>
+<section id="faq">
+  <div class="container">
+    <div class="sec-label">常见问题</div>
+    <h2 class="sec-title">还有疑问？</h2>
+    <p class="sec-desc">没找到答案就直接在聊天里问 HOU。</p>
+    <div class="faq-wrap">
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">
+          HOU 是什么 AI？和 ChatGPT 有什么区别？
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body"><div class="faq-inner">HOU 基于 DeepSeek V4 Pro 构建，专为年轻人赚钱、副业和决策场景深度调优。ChatGPT 是通用 AI，HOU 是专属决策引擎，每条回答有具体数字和今天能执行的第一步。</div></div>
       </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)">
-        免费版每天 10 次够用吗？
-        <span class="faq-plus">+</span>
-      </button>
-      <div class="faq-body">
-        <div class="faq-inner">用来初步体验和偶尔咨询够用。如果你每天都在用 HOU 做决策和副业规划，10 次会不够，建议升级 Pro。Pro 版每月 9.9 元，约合每天不到 3 毛钱。</div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">
+          免费版每天 10 次够用吗？
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body"><div class="faq-inner">用来初步体验够用。如果你每天用 HOU 做决策和副业规划，10 次不够，建议升级 Pro。Pro 每月 9.9 元，约合每天不到 3 毛钱。</div></div>
       </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)">
-        Pro 版如何付款？支持哪些方式？
-        <span class="faq-plus">+</span>
-      </button>
-      <div class="faq-body">
-        <div class="faq-inner">目前支持微信支付，后续会接入支付宝。在个人中心点击升级 Pro，扫码即可完成订阅。</div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">
+          Pro 版如何付款？支持哪些方式？
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body"><div class="faq-inner">目前支持微信支付，后续接入支付宝。在个人中心点击升级 Pro，扫码完成订阅。</div></div>
       </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)">
-        HOU 回答的质量有保证吗？
-        <span class="faq-plus">+</span>
-      </button>
-      <div class="faq-body">
-        <div class="faq-inner">HOU 有严格的回答铁律：给结论不废话、用具体数字说话、每条建议必须有今天能启动的第一步。但 AI 不能替代你的判断——HOU 给你方向和框架，执行还得你来。</div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">
+          不满意可以退款吗？
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body"><div class="faq-inner">Pro 订阅支持随时取消，不续费。首月体验不满意，联系客服说明情况，可申请退款。</div></div>
       </div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)">
-        不满意可以退款吗？
-        <span class="faq-plus">+</span>
-      </button>
-      <div class="faq-body">
-        <div class="faq-inner">Pro 订阅支持随时取消，不续费。如果首月体验不满意，联系客服说明情况，可申请退款。</div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">
+          HOU 回答的质量有保证吗？
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body"><div class="faq-inner">HOU 有严格的回答规范：给结论不废话、用具体数字说话、每条建议必须有今天能启动的第一步。但 AI 不能替代你的判断——HOU 给方向和框架，执行还得你来。</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Final CTA -->
-<div class="cta-final">
-  <h2 class="s-title">现在就开始</h2>
-  <p class="s-sub">免费使用，10 次对话感受差距。</p>
-  <a href="/chat" class="btn-primary">免费开始使用 →</a>
-  <p class="hero-note" style="margin-top:16px;">每天 10 次免费 · 无需信用卡 · 随时取消订阅</p>
-</div>
+<!-- CTA -->
+<section>
+  <div class="container">
+    <div class="cta-box">
+      <div class="cta-title">现在就开始</div>
+      <p class="cta-sub">免费使用，10 次对话感受差距。</p>
+      <a href="/chat" class="btn btn-primary">免费开始使用 →</a>
+      <p class="cta-note">每天 10 次免费 · 无需信用卡 · 随时取消订阅</p>
+    </div>
+  </div>
+</section>
 
 <!-- Footer -->
 <footer>
-  <div class="f-logo">HOU</div>
-  <ul class="f-links">
-    <li><a href="#features">功能介绍</a></li>
-    <li><a href="#pricing">定价</a></li>
-    <li><a href="/chat">开始使用</a></li>
-    <li><a href="#">隐私政策</a></li>
-    <li><a href="#">服务条款</a></li>
-  </ul>
-  <div class="f-copy">© 2026 HOU · 上海润茂达进出口贸易有限公司</div>
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-logo">HOU</span>
+      <ul class="footer-links">
+        <li><a href="#features">功能介绍</a></li>
+        <li><a href="#pricing">定价</a></li>
+        <li><a href="/chat">开始使用</a></li>
+        <li><a href="#">隐私政策</a></li>
+        <li><a href="#">服务条款</a></li>
+      </ul>
+      <span class="footer-copy">© 2026 HOU · 上海润茂达进出口贸易有限公司</span>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -695,102 +609,6 @@ function toggleFaq(btn) {
   document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
   if (!wasOpen) item.classList.add('open');
 }
-
-/* ── Scroll Reveal + 3D Parallax ── */
-(function () {
-  // 1. section 标题/标签从左进入
-  document.querySelectorAll('.s-label, .s-title, .s-sub').forEach(el => {
-    if (el.closest('.hero-content') || el.closest('.cta-final')) return;
-    el.classList.add('sr', 'from-left');
-  });
-
-  // 2. 功能卡片：左 / 底 / 右
-  const fcards = document.querySelectorAll('.f-card');
-  const fdirs = ['from-left', 'from-bottom', 'from-right'];
-  fcards.forEach((el, i) => {
-    el.classList.add('sr', fdirs[i % 3]);
-    el.style.transitionDelay = (i * 90) + 'ms';
-  });
-
-  // 3. How步骤：左→底→右
-  document.querySelectorAll('.how-step').forEach((el, i) => {
-    const dirs = ['from-left', 'from-bottom', 'from-right'];
-    el.classList.add('sr', dirs[i % 3]);
-    el.style.transitionDelay = (i * 100) + 'ms';
-  });
-
-  // 4. 定价卡片：左 / 右
-  document.querySelectorAll('.p-card').forEach((el, i) => {
-    el.classList.add('sr', i % 2 === 0 ? 'from-left' : 'from-right');
-    el.style.transitionDelay = (i * 100) + 'ms';
-  });
-
-  // 5. FAQ：奇左偶右
-  document.querySelectorAll('.faq-item').forEach((el, i) => {
-    el.classList.add('sr', i % 2 === 0 ? 'from-left' : 'from-right');
-    el.style.transitionDelay = (i * 60) + 'ms';
-  });
-
-  // 6. CTA 区域：从底部进入
-  document.querySelectorAll('.cta-final .s-title, .cta-final .s-sub, .cta-final .btn-primary, .cta-final .hero-note').forEach((el, i) => {
-    el.classList.add('sr', 'from-bottom');
-    el.style.transitionDelay = (i * 80) + 'ms';
-  });
-
-  // 7. Footer：左中右
-  const fItems = document.querySelectorAll('footer .f-logo, footer .f-links, footer .f-copy');
-  const fDirs = ['from-left', 'from-bottom', 'from-right'];
-  fItems.forEach((el, i) => el.classList.add('sr', fDirs[i] || 'from-bottom'));
-
-  // 3. IntersectionObserver — 进入淡入，向上离开淡出
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in');
-      } else if (entry.boundingClientRect.top < 0) {
-        // 向上滚出视口才淡出（向下滚进视口不重置）
-        entry.target.classList.remove('in');
-      }
-    });
-  }, { threshold: 0.10, rootMargin: '0px 0px -44px 0px' });
-
-  document.querySelectorAll('.sr').forEach(el => io.observe(el));
-
-  // benchmark 柱状图 scroll reveal
-  const benchWrap = document.getElementById('benchWrap');
-  if (benchWrap) {
-    const fills = benchWrap.querySelectorAll('.bench-fill');
-    let animated = false;
-    const benchIO = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !animated) {
-        animated = true;
-        fills.forEach((el, i) => {
-          const val = parseFloat(el.dataset.val);
-          setTimeout(() => { el.style.width = val + '%'; }, i * 120);
-        });
-      }
-    }, { threshold: 0.25 });
-    benchIO.observe(benchWrap);
-  }
-
-  // 4. 视差滚动（rAF节流，硬件加速）
-  const heroGrid = document.querySelector('.hero-grid');
-  const heroGlow = document.querySelector('.hero-glow');
-
-  let raf = false;
-  function onScroll() {
-    if (raf) return;
-    raf = true;
-    requestAnimationFrame(() => {
-      const y = window.scrollY;
-      if (heroGrid) heroGrid.style.transform = 'translateY(' + (y * 0.22) + 'px) translateZ(0)';
-      if (heroGlow) heroGlow.style.transform = 'translateX(-50%) translateY(' + (y * 0.35) + 'px) translateZ(0)';
-      raf = false;
-    });
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-})();
 </script>
 </body>
 </html>
