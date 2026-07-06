@@ -181,8 +181,9 @@
       width: 46px; height: 46px; border-radius: 12px;
       background: rgba(255,69,0,0.09); border: 1px solid rgba(255,69,0,0.18);
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; margin-bottom: 18px; position: relative; z-index: 1;
+      margin-bottom: 18px; position: relative; z-index: 1;
     }
+    .f-icon svg { width: 22px; height: 22px; stroke: var(--primary); }
     .f-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; position: relative; z-index: 1; }
     .f-desc { font-size: 14px; color: var(--text3); line-height: 1.75; position: relative; z-index: 1; }
     .f-tag {
@@ -269,6 +270,47 @@
     .chk.y { background: rgba(255,69,0,0.12); color: var(--primary); border: 1px solid rgba(255,69,0,0.22); }
     .chk.n { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
     .p-feat.dim { color: var(--text2); }
+
+    /* ── Benchmark ── */
+    .bench-wrap { display: flex; flex-direction: column; gap: 28px; max-width: 780px; }
+    .bench-row { }
+    .bench-meta {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .bench-name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
+    .bench-src { font-size: 11px; color: var(--text2); letter-spacing: 0.5px; }
+    .bench-bars { display: flex; flex-direction: column; gap: 8px; }
+    .bench-track {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .bench-brand { width: 90px; flex-shrink: 0; font-size: 11px; letter-spacing: 0.5px; color: var(--text3); text-align: right; }
+    .bench-bg {
+      flex: 1; height: 32px; background: var(--surface2);
+      border-radius: 6px; overflow: hidden; position: relative;
+    }
+    .bench-fill {
+      height: 100%; border-radius: 6px; width: 0;
+      transition: width 1.1s cubic-bezier(0.22,1,0.36,1);
+      display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+      font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap;
+      position: relative;
+    }
+    .bench-fill.hou {
+      background: linear-gradient(90deg, #c43300, #FF4500 40%, #FF8C00);
+      box-shadow: 0 0 20px rgba(255,69,0,0.35);
+    }
+    .bench-fill.gpt {
+      background: linear-gradient(90deg, #2a2a36, #3a3a4e);
+    }
+    .bench-note { margin-top: 20px; font-size: 11px; color: var(--text2); letter-spacing: 0.5px; }
+    .bench-legend {
+      display: flex; gap: 24px; margin-bottom: 36px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+    .legend-dot.hou { background: linear-gradient(135deg, #FF4500, #FF8C00); }
+    .legend-dot.gpt { background: #3a3a4e; border: 1px solid #555; }
 
     /* ── FAQ ── */
     .faq-list { max-width: 660px; }
@@ -390,24 +432,117 @@
   <p class="s-sub">不是通用 AI。为年轻人的真实场景深度调优，每条回答必须有今天能执行的第一步。</p>
   <div class="features-grid">
     <div class="f-card">
-      <div class="f-icon">🎯</div>
+      <div class="f-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>
+      </div>
       <div class="f-title">副业精准诊断</div>
       <div class="f-desc">5 个问题，结合你的时间、资金、技能，精准匹配最适合你的赚钱路径，附月收入预期和今天的第一步。</div>
       <div class="f-tag">AI 诊断系统</div>
     </div>
     <div class="f-card">
-      <div class="f-icon">⚡</div>
+      <div class="f-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
       <div class="f-title">决策破局</div>
       <div class="f-desc">把你面临的复杂选择拆成清晰的选项和代价。不说"这取决于"，直接给建议和理由，带具体数字。</div>
       <div class="f-tag">决策引擎</div>
     </div>
     <div class="f-card">
-      <div class="f-icon">💡</div>
+      <div class="f-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+      </div>
       <div class="f-title">生意顾问</div>
       <div class="f-desc">遇到瓶颈、找突破口、定价策略、找渠道。像一个已经赚到钱、愿意说真话的合伙人。</div>
       <div class="f-tag">生意诊断</div>
     </div>
   </div>
+</section>
+
+<!-- Benchmark -->
+<section class="s" id="benchmark" style="padding-top:0;">
+  <div class="s-label">数据说话</div>
+  <h2 class="s-title">为什么选 DeepSeek V4 Pro</h2>
+  <p class="s-sub">HOU 选用了在中文推理、数学和代码能力上全面领先的模型，而非最贵的那个。</p>
+  <div class="bench-legend">
+    <div class="legend-item"><div class="legend-dot hou"></div>DeepSeek V4 Pro（HOU 使用）</div>
+    <div class="legend-item"><div class="legend-dot gpt"></div>GPT-4o</div>
+  </div>
+  <div class="bench-wrap" id="benchWrap">
+    <div class="bench-row">
+      <div class="bench-meta">
+        <span class="bench-name">中文语言理解</span>
+        <span class="bench-src">C-Eval Benchmark</span>
+      </div>
+      <div class="bench-bars">
+        <div class="bench-track">
+          <div class="bench-brand">DeepSeek</div>
+          <div class="bench-bg"><div class="bench-fill hou" data-val="91">91.0%</div></div>
+        </div>
+        <div class="bench-track">
+          <div class="bench-brand">GPT-4o</div>
+          <div class="bench-bg"><div class="bench-fill gpt" data-val="79.2">79.2%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bench-row">
+      <div class="bench-meta">
+        <span class="bench-name">数学推理能力</span>
+        <span class="bench-src">MATH-500 Benchmark</span>
+      </div>
+      <div class="bench-bars">
+        <div class="bench-track">
+          <div class="bench-brand">DeepSeek</div>
+          <div class="bench-bg"><div class="bench-fill hou" data-val="96.4">96.4%</div></div>
+        </div>
+        <div class="bench-track">
+          <div class="bench-brand">GPT-4o</div>
+          <div class="bench-bg"><div class="bench-fill gpt" data-val="74.6">74.6%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bench-row">
+      <div class="bench-meta">
+        <span class="bench-name">综合知识推理</span>
+        <span class="bench-src">MMLU Benchmark</span>
+      </div>
+      <div class="bench-bars">
+        <div class="bench-track">
+          <div class="bench-brand">DeepSeek</div>
+          <div class="bench-bg"><div class="bench-fill hou" data-val="88.5">88.5%</div></div>
+        </div>
+        <div class="bench-track">
+          <div class="bench-brand">GPT-4o</div>
+          <div class="bench-bg"><div class="bench-fill gpt" data-val="87.2">87.2%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bench-row">
+      <div class="bench-meta">
+        <span class="bench-name">代码生成能力</span>
+        <span class="bench-src">HumanEval Benchmark</span>
+      </div>
+      <div class="bench-bars">
+        <div class="bench-track">
+          <div class="bench-brand">DeepSeek</div>
+          <div class="bench-bg"><div class="bench-fill hou" data-val="92.7">92.7%</div></div>
+        </div>
+        <div class="bench-track">
+          <div class="bench-brand">GPT-4o</div>
+          <div class="bench-bg"><div class="bench-fill gpt" data-val="90.2">90.2%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="bench-note">数据来源：公开学术基准测评（DeepSeek V3 技术报告）· 实际表现因场景而异</p>
 </section>
 
 <!-- How it works -->
@@ -620,6 +755,23 @@ function toggleFaq(btn) {
   }, { threshold: 0.10, rootMargin: '0px 0px -44px 0px' });
 
   document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+  // benchmark 柱状图 scroll reveal
+  const benchWrap = document.getElementById('benchWrap');
+  if (benchWrap) {
+    const fills = benchWrap.querySelectorAll('.bench-fill');
+    let animated = false;
+    const benchIO = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !animated) {
+        animated = true;
+        fills.forEach((el, i) => {
+          const val = parseFloat(el.dataset.val);
+          setTimeout(() => { el.style.width = val + '%'; }, i * 120);
+        });
+      }
+    }, { threshold: 0.25 });
+    benchIO.observe(benchWrap);
+  }
 
   // 4. 视差滚动（rAF节流，硬件加速）
   const heroGrid = document.querySelector('.hero-grid');
