@@ -1,6 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const FREE_LIMIT = 10;
+const OPEN_BETA = true; // 内测期间免费，关闭时改为 false
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
   const isPro = profile && profile.is_pro && (!profile.pro_expires_at || new Date(profile.pro_expires_at) > new Date());
 
   // 免费用户用量检查
-  if (!isPro) {
+  if (!OPEN_BETA && !isPro) {
     const today = new Date().toISOString().split('T')[0];
     const usageRes = await fetch(
       `${SUPABASE_URL}/rest/v1/usage_logs?user_id=eq.${userId}&date=eq.${today}&select=id,message_count`,
