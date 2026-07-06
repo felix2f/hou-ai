@@ -231,40 +231,57 @@
     .footer-links a:hover { color: var(--text); }
     .footer-copy { font-size: 12px; color: var(--text3); }
 
-    /* ── Stone texture ── */
+    /* ── Stone texture: 三层互干涉，素数周期产生不规律感 ── */
     .stone-layer {
       position: fixed; inset: 0; z-index: -1;
       pointer-events: none; user-select: none;
       background-color: #060608;
-      background-image:
-        radial-gradient(circle, #2a2a2e 1px,   transparent 0),
-        radial-gradient(circle, #262628 1.5px,  transparent 0),
-        radial-gradient(circle, #222226 1px,   transparent 0),
-        radial-gradient(circle, #2e2e34 2px,   transparent 0),
-        radial-gradient(circle, #28282e 1px,   transparent 0),
-        radial-gradient(circle, #1e1e24 1.5px,  transparent 0),
-        radial-gradient(circle, #303038 1px,   transparent 0),
-        radial-gradient(circle, #242430 1px,   transparent 0);
-      background-size: 60px 60px;
-      background-position:
-        11px 7px,  34px 41px, 52px 18px, 6px 54px,
-        43px 2px,  27px 30px, 14px 46px, 51px 27px;
-      animation: stone-drift 22s linear infinite;
+      animation: stone-breathe 31s ease-in-out infinite;
     }
-    @keyframes stone-drift {
-      0%   {
-        background-position:
-          11px 7px,  34px 41px, 52px 18px, 6px 54px,
-          43px 2px,  27px 30px, 14px 46px, 51px 27px;
-        filter: brightness(0.95);
-      }
-      50%  { filter: brightness(1.05); }
-      100% {
-        background-position:
-          71px 67px, 94px 101px, 112px 78px, 66px 114px,
-          103px 62px, 87px 90px, 74px 106px, 111px 87px;
-        filter: brightness(0.95);
-      }
+    .stone-layer::before,
+    .stone-layer::after {
+      content: ''; position: absolute; inset: 0;
+    }
+    /* 层A：右下漂移，17s */
+    .stone-layer::before {
+      background-image:
+        radial-gradient(circle, #2c2c32 1px,   transparent 0),
+        radial-gradient(circle, #242428 1.5px, transparent 0),
+        radial-gradient(circle, #30303a 1px,   transparent 0),
+        radial-gradient(circle, #282830 2px,   transparent 0),
+        radial-gradient(circle, #1e1e26 1px,   transparent 0);
+      background-size: 71px 71px;
+      background-position: 9px 6px, 38px 44px, 55px 20px, 14px 60px, 27px 33px;
+      animation: drift-a 17s linear infinite;
+    }
+    /* 层B：左下漂移（X反向），23s，与A错相位产生干涉 */
+    .stone-layer::after {
+      background-image:
+        radial-gradient(circle, #262634 1px,   transparent 0),
+        radial-gradient(circle, #20202c 1.5px, transparent 0),
+        radial-gradient(circle, #2e2e3c 1px,   transparent 0),
+        radial-gradient(circle, #222230 1px,   transparent 0);
+      background-size: 83px 83px;
+      background-position: 41px 11px, 21px 58px, 67px 34px, 7px 45px;
+      opacity: 0.65;
+      animation: drift-b 23s linear infinite;
+    }
+    /* 漂移：移动量 = 整数倍 background-size，确保无缝衔接 */
+    @keyframes drift-a {
+      from { background-position:  9px  6px, 38px 44px, 55px 20px, 14px 60px, 27px 33px; }
+      to   { background-position: 80px 77px,109px115px,126px 91px, 85px131px, 98px104px; }
+    }
+    @keyframes drift-b {
+      from { background-position:  41px 11px,  21px 58px,  67px 34px,  7px 45px; }
+      to   { background-position: -42px 94px, -62px141px, -16px117px,-76px128px; }
+    }
+    /* 亮度呼吸：非对称停点（30/60/80%），让节奏感消失 */
+    @keyframes stone-breathe {
+      0%   { filter: brightness(0.93); }
+      30%  { filter: brightness(1.06); }
+      60%  { filter: brightness(0.97); }
+      80%  { filter: brightness(1.08); }
+      100% { filter: brightness(0.93); }
     }
 
     /* ── Scroll Reveal ── */
