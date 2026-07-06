@@ -29,68 +29,109 @@
 
     #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-    /* ── 登录页 ── */
-    #loginScreen {
-      position: fixed; inset: 0; z-index: 10;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: space-between;
-      padding: 8vh 0 7vh;
+    @keyframes shimmer { 0% { left: -60%; } 100% { left: 140%; } }
+
+    /* ── 登录模态框 ── */
+    .auth-overlay {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(2,2,4,0.92); backdrop-filter: blur(14px);
+      align-items: center; justify-content: center; padding: 24px;
     }
-    .login-top { display: flex; flex-direction: column; align-items: center; gap: 0; }
-    .login-tag {
-      font-size: 11px; font-weight: 400; letter-spacing: 5px;
-      text-transform: uppercase; margin-bottom: 14px;
-      color: rgba(255,255,255,0.32);
-    }
-    .login-logo {
-      font-size: 72px; font-weight: 900; letter-spacing: -4px;
-      background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 40px rgba(255,69,0,0.55));
-      line-height: 1;
-      animation: logoGlow 3s ease-in-out infinite alternate;
-    }
-    @keyframes logoGlow {
-      from { filter: drop-shadow(0 0 24px rgba(255,69,0,0.40)); }
-      to   { filter: drop-shadow(0 0 60px rgba(255,140,0,0.65)); }
-    }
-    .login-bottom { display: flex; flex-direction: column; align-items: center; }
-    .login-sub {
-      color: rgba(255,255,255,0.20); font-size: 11px; letter-spacing: 2px;
-      margin-bottom: 18px; text-align: center; line-height: 1.8;
-    }
-    .login-sub .line2 { display: block; font-size: 12px; color: rgba(255,255,255,0.22); letter-spacing: 2px; }
-    .login-card {
-      background: rgba(4,8,18,0.72); backdrop-filter: blur(36px) saturate(1.2);
-      border: 1px solid rgba(255,255,255,0.07); border-radius: 20px;
-      padding: 36px; width: 340px;
-      box-shadow: 0 0 100px rgba(0,0,0,0.85), 0 0 50px rgba(224,102,8,0.06),
+    .auth-overlay.show { display: flex; }
+    .auth-box {
+      background: rgba(14,14,18,0.97); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 22px; padding: 40px 36px; width: 360px; max-width: 100%;
+      box-shadow: 0 0 100px rgba(0,0,0,0.9), 0 0 40px rgba(255,69,0,0.06),
                   inset 0 1px 0 rgba(255,255,255,0.05);
     }
-    .login-label { font-size: 11px; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; margin-bottom: 10px; }
-    .login-card input {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 15px;
-      outline: none; margin-bottom: 16px; transition: border-color 0.3s, box-shadow 0.3s;
+    .auth-logo {
+      font-size: 28px; font-weight: 900; letter-spacing: -2px; margin-bottom: 4px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 20px rgba(255,69,0,0.2); }
-    .login-card input::placeholder { color: #2a2a38; }
-    .login-err { color: #ff4444; font-size: 12px; margin-bottom: 12px; display: none; }
-    .btn-fire {
+    .auth-title { font-size: 14px; color: var(--text2); margin-bottom: 30px; letter-spacing: 0.3px; }
+    .auth-label { font-size: 11px; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; margin-bottom: 10px; }
+    .auth-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    .auth-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px 16px; color: var(--text); font-size: 15px;
+      outline: none; font-family: inherit; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 18px rgba(255,69,0,0.15); }
+    .auth-input::placeholder { color: #2a2a38; }
+    .auth-send-btn {
+      background: none; border: 1px solid var(--border); border-radius: 10px;
+      padding: 0 14px; color: var(--primary); font-size: 13px; cursor: pointer;
+      white-space: nowrap; min-width: 96px; transition: all 0.2s; font-family: inherit;
+    }
+    .auth-send-btn:hover:not(:disabled) { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,69,0,0.2); }
+    .auth-send-btn:disabled { color: var(--text2); border-color: var(--border); cursor: default; }
+    .auth-code-wrap { margin-bottom: 20px; }
+    .auth-btn {
       width: 100%; background: linear-gradient(135deg, #FF4500, #FF8C00);
-      border: none; border-radius: 10px; padding: 14px;
-      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
-      letter-spacing: 2px; position: relative; overflow: hidden;
+      border: none; border-radius: 10px; padding: 15px; color: #fff;
+      font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(255,69,0,0.25); font-family: inherit;
       transition: opacity 0.2s, transform 0.1s;
     }
-    .btn-fire::before {
-      content: ''; position: absolute; top: -50%; left: -60%;
-      width: 40%; height: 200%; background: rgba(255,255,255,0.15);
-      transform: skewX(-20deg); animation: shimmer 3s infinite;
+    .auth-btn:hover { opacity: 0.88; }
+    .auth-btn:active { transform: scale(0.98); }
+    .auth-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+    .auth-err { color: #ff4444; font-size: 12px; margin-top: 10px; min-height: 16px; }
+    .auth-note { font-size: 12px; color: var(--text2); margin-top: 14px; text-align: center; line-height: 1.65; }
+    .dev-hint {
+      background: rgba(255,140,0,0.07); border: 1px solid rgba(255,140,0,0.2);
+      border-radius: 8px; padding: 9px 13px; margin-top: 12px;
+      font-size: 13px; color: var(--primary2); display: none;
     }
-    @keyframes shimmer { 0% { left: -60%; } 100% { left: 140%; } }
-    .btn-fire:hover { opacity: 0.88; }
-    .btn-fire:active { transform: scale(0.98); }
+    .dev-hint.show { display: block; }
+
+    /* ── 头部用户信息 ── */
+    .h-right { display: flex; align-items: center; gap: 10px; }
+    .h-phone { font-size: 12px; color: var(--text2); }
+    .h-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 9px;
+      border-radius: 100px; letter-spacing: 1px;
+    }
+    .h-badge.free { background: rgba(255,255,255,0.04); color: var(--text2); border: 1px solid var(--border); }
+    .h-badge.pro { background: linear-gradient(135deg,#FF4500,#FF8C00); color:#fff; }
+    .h-upgrade {
+      font-size: 12px; color: var(--primary); cursor: pointer;
+      border: 1px solid rgba(255,69,0,0.22); border-radius: 6px;
+      padding: 4px 11px; background: none; font-family: inherit; transition: all 0.2s;
+    }
+    .h-upgrade:hover { background: rgba(255,69,0,0.07); box-shadow: 0 0 10px rgba(255,69,0,0.18); }
+    @media (max-width: 680px) { .h-phone { display: none; } }
+
+    /* ── 升级弹窗 ── */
+    .upgrade-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(12px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .upgrade-overlay.show { display: flex; }
+    .upgrade-box {
+      background: var(--surface); border: 1px solid rgba(255,69,0,0.3);
+      border-radius: 22px; padding: 36px 32px; width: 360px; max-width: 100%;
+      text-align: center; box-shadow: 0 0 80px rgba(255,69,0,0.1);
+    }
+    .up-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+    .up-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; line-height: 1.65; }
+    .up-price {
+      font-size: 56px; font-weight: 900; letter-spacing: -4px; line-height: 1;
+      background: linear-gradient(135deg,#FF4500,#FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .up-period { font-size: 14px; color: var(--text2); margin: 4px 0 28px; }
+    .up-btn {
+      display: block; width: 100%; padding: 15px; background: linear-gradient(135deg,#FF4500,#FF8C00);
+      border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 0 24px rgba(255,69,0,0.28); font-family: inherit;
+      transition: opacity 0.2s; margin-bottom: 12px;
+    }
+    .up-btn:hover { opacity: 0.88; }
+    .up-cancel { font-size: 13px; color: var(--text2); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .up-cancel:hover { color: var(--text2); opacity: 0.7; }
 
     /* ── 聊天页 ── */
     #chatScreen {
@@ -394,6 +435,43 @@
   </div>
 </div>
 
+<!-- 登录模态框 -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">HOU</div>
+    <div class="auth-title">登录或注册，开始使用</div>
+    <div id="authStep1">
+      <div class="auth-label">手机号</div>
+      <div class="auth-row">
+        <input type="tel" class="auth-input" id="authPhone" placeholder="请输入手机号" maxlength="11" oninput="onPhoneInput()" />
+        <button class="auth-send-btn" id="authSendBtn" onclick="doSendCode()" disabled>获取验证码</button>
+      </div>
+    </div>
+    <div id="authStep2" style="display:none;">
+      <div class="auth-label">验证码</div>
+      <div class="auth-code-wrap">
+        <input type="text" class="auth-input" id="authCode" placeholder="6位验证码" maxlength="6" inputmode="numeric" />
+      </div>
+      <div class="dev-hint" id="devHint"></div>
+    </div>
+    <button class="auth-btn" id="authMainBtn" onclick="doAuthMain()">获取验证码</button>
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-note">未注册的手机号将自动注册<br>注册即同意服务条款与隐私政策</div>
+  </div>
+</div>
+
+<!-- 升级弹窗 -->
+<div class="upgrade-overlay" id="upgradeOverlay">
+  <div class="upgrade-box">
+    <div class="up-title">今日次数已用完</div>
+    <div class="up-sub">免费版每天 10 次对话<br>升级 Pro，无限使用不设限</div>
+    <div class="up-price">¥9.9</div>
+    <div class="up-period">/ 月 · 随时取消</div>
+    <button class="up-btn" onclick="goPro()">立即升级 Pro</button>
+    <button class="up-cancel" onclick="closeUpgrade()">明天再说</button>
+  </div>
+</div>
+
 <!-- 聊天页 -->
 <div id="chatScreen">
   <!-- 侧边栏遮罩（移动端） -->
@@ -419,6 +497,7 @@
         <div class="h-divider"></div>
         <div class="h-model"><div class="h-dot"></div>DeepSeek V4 Pro</div>
       </div>
+      <div class="h-right" id="hRight"></div>
     </div>
     <div id="messages" class="messages"></div>
     <div class="input-area">
@@ -689,6 +768,117 @@
   render();
 })();
 
+/* ── 认证系统 ── */
+let currentToken = localStorage.getItem('hou_token');
+let currentUser = null;
+let smsTimer = null;
+
+async function checkAuth() {
+  if (!currentToken) { showAuthModal(); return; }
+  try {
+    const r = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${currentToken}` } });
+    if (!r.ok) { localStorage.removeItem('hou_token'); currentToken = null; showAuthModal(); return; }
+    currentUser = await r.json();
+    updateUserHeader();
+  } catch { showAuthModal(); }
+}
+
+function showAuthModal() { document.getElementById('authOverlay').classList.add('show'); }
+function hideAuthModal() { document.getElementById('authOverlay').classList.remove('show'); }
+
+function onPhoneInput() {
+  const v = document.getElementById('authPhone').value.trim();
+  document.getElementById('authSendBtn').disabled = !/^1[3-9]\d{9}$/.test(v);
+}
+
+async function doSendCode() {
+  const phone = document.getElementById('authPhone').value.trim();
+  if (!/^1[3-9]\d{9}$/.test(phone)) { setAuthErr('请输入有效手机号'); return; }
+  setAuthErr('');
+  const sendBtn = document.getElementById('authSendBtn');
+  sendBtn.disabled = true;
+  try {
+    const r = await fetch('/api/send-sms', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const d = await r.json();
+    if (!d.ok) { setAuthErr(d.error || '发送失败'); sendBtn.disabled = false; return; }
+
+    document.getElementById('authStep1').style.display = 'none';
+    document.getElementById('authStep2').style.display = 'block';
+    document.getElementById('authMainBtn').textContent = '登录 / 注册';
+    document.getElementById('authCode').focus();
+
+    if (d._dev_code) {
+      const hint = document.getElementById('devHint');
+      hint.textContent = `[开发模式] 验证码：${d._dev_code}`;
+      hint.classList.add('show');
+    }
+
+    let count = 60;
+    sendBtn.textContent = `${count}s`;
+    smsTimer = setInterval(() => {
+      count--;
+      if (count <= 0) { clearInterval(smsTimer); sendBtn.textContent = '重新发送'; sendBtn.disabled = false; }
+      else sendBtn.textContent = `${count}s`;
+    }, 1000);
+  } catch { setAuthErr('网络错误，请重试'); sendBtn.disabled = false; }
+}
+
+async function doAuthMain() {
+  if (document.getElementById('authStep2').style.display === 'none') { doSendCode(); return; }
+  const phone = document.getElementById('authPhone').value.trim();
+  const code = document.getElementById('authCode').value.trim();
+  if (!code || code.length !== 6) { setAuthErr('请输入6位验证码'); return; }
+  const btn = document.getElementById('authMainBtn');
+  btn.disabled = true; btn.textContent = '验证中...'; setAuthErr('');
+  try {
+    const r = await fetch('/api/verify-sms', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, code })
+    });
+    const d = await r.json();
+    if (!d.ok) { setAuthErr(d.error || '验证失败'); btn.disabled = false; btn.textContent = '登录 / 注册'; return; }
+    currentToken = d.token; localStorage.setItem('hou_token', currentToken);
+    if (smsTimer) clearInterval(smsTimer);
+    hideAuthModal();
+    await refreshUserInfo();
+    updateUserHeader();
+    renderHistory(); showEmpty();
+  } catch { setAuthErr('网络错误，请重试'); btn.disabled = false; btn.textContent = '登录 / 注册'; }
+}
+
+function setAuthErr(msg) { document.getElementById('authErr').textContent = msg; }
+
+async function refreshUserInfo() {
+  if (!currentToken) return;
+  try {
+    const r = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${currentToken}` } });
+    if (r.ok) currentUser = await r.json();
+  } catch {}
+}
+
+function maskPhone(p) { return p.slice(0,3) + '****' + p.slice(-4); }
+
+function updateUserHeader() {
+  if (!currentUser) return;
+  const el = document.getElementById('hRight');
+  const isPro = currentUser.is_pro;
+  const rem = currentUser.remaining;
+  el.innerHTML = `
+    <span class="h-phone">${maskPhone(currentUser.phone)}</span>
+    <span class="h-badge ${isPro?'pro':'free'}">${isPro?'PRO':`${rem??0}次`}</span>
+    ${!isPro?`<button class="h-upgrade" onclick="showUpgrade()">升级 Pro</button>`:''}
+  `;
+}
+
+function showUpgrade() { document.getElementById('upgradeOverlay').classList.add('show'); }
+function closeUpgrade() { document.getElementById('upgradeOverlay').classList.remove('show'); }
+function goPro() { alert('支付功能即将上线！'); }
+
+checkAuth();
+
 /* ── 系统提示词 ── */
 const SYSTEM = `你是HOU，专为年轻人赚钱、副业和方向决策打造的AI引擎。
 
@@ -878,10 +1068,19 @@ async function sendMsg() {
 
   try {
     const res = await fetch('/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', headers:{
+        'Content-Type':'application/json',
+        'Authorization': currentToken ? `Bearer ${currentToken}` : ''
+      },
       body: JSON.stringify({ messages:[{role:'system',content:SYSTEM},...msgs] })
     });
     loader.remove();
+    if (res.status === 401) { showAuthModal(); return; }
+    if (res.status === 403) {
+      const fd = await res.json().catch(()=>({}));
+      if (fd.error === 'limit_reached') { showUpgrade(); return; }
+      addMsg('bot','服务暂时不可用。'); return;
+    }
     if (!res.ok) { addMsg('bot','连接出错，请稍后重试。'); return; }
 
     const botDiv = addMsg('bot','');
@@ -912,6 +1111,7 @@ async function sendMsg() {
     }
     msgs.push({ role:'assistant', content:full });
     saveCurrentSession();
+    await refreshUserInfo(); updateUserHeader();
   } catch {
     loader.remove();
     addMsg('bot','网络错误，请检查连接后重试。');
