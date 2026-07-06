@@ -235,9 +235,37 @@
     .stone-layer {
       position: fixed; inset: 0; z-index: -1;
       pointer-events: none; user-select: none;
-      mix-blend-mode: soft-light; opacity: 0.04;
+      background-color: #060608;
+      background-image:
+        radial-gradient(circle, #2a2a2e 1px,   transparent 0),
+        radial-gradient(circle, #262628 1.5px,  transparent 0),
+        radial-gradient(circle, #222226 1px,   transparent 0),
+        radial-gradient(circle, #2e2e34 2px,   transparent 0),
+        radial-gradient(circle, #28282e 1px,   transparent 0),
+        radial-gradient(circle, #1e1e24 1.5px,  transparent 0),
+        radial-gradient(circle, #303038 1px,   transparent 0),
+        radial-gradient(circle, #242430 1px,   transparent 0);
+      background-size: 60px 60px;
+      background-position:
+        11px 7px,  34px 41px, 52px 18px, 6px 54px,
+        43px 2px,  27px 30px, 14px 46px, 51px 27px;
+      animation: stone-drift 22s linear infinite;
     }
-    .stone-layer svg { display: block; width: 100%; height: 100%; }
+    @keyframes stone-drift {
+      0%   {
+        background-position:
+          11px 7px,  34px 41px, 52px 18px, 6px 54px,
+          43px 2px,  27px 30px, 14px 46px, 51px 27px;
+        filter: brightness(0.95);
+      }
+      50%  { filter: brightness(1.05); }
+      100% {
+        background-position:
+          71px 67px, 94px 101px, 112px 78px, 66px 114px,
+          103px 62px, 87px 90px, 74px 106px, 111px 87px;
+        filter: brightness(0.95);
+      }
+    }
 
     /* ── Scroll Reveal ── */
     .sr { opacity: 0; transition: opacity 0.45s ease-out, transform 0.45s ease-out; will-change: opacity, transform; }
@@ -249,25 +277,8 @@
 </head>
 <body>
 
-<!-- 石材底纹 -->
-<div class="stone-layer" aria-hidden="true">
-  <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-    <filter id="stone" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.50" numOctaves="4" stitchTiles="stitch" result="noise">
-        <animate attributeName="baseFrequency"
-          values="0.500;0.515;0.530;0.515;0.500"
-          dur="25s" repeatCount="indefinite" calcMode="linear"/>
-      </feTurbulence>
-      <feColorMatrix in="noise" type="saturate" values="0" result="gray"/>
-      <feComponentTransfer in="gray" result="dimmed">
-        <feFuncR type="linear" slope="0.04"/>
-        <feFuncG type="linear" slope="0.04"/>
-        <feFuncB type="linear" slope="0.05"/>
-      </feComponentTransfer>
-    </filter>
-    <rect width="100%" height="100%" filter="url(#stone)"/>
-  </svg>
-</div>
+<!-- 石材底纹 (CSS pure) -->
+<div class="stone-layer" aria-hidden="true"></div>
 
 <!-- 导航 -->
 <nav>
