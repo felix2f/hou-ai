@@ -322,6 +322,20 @@
     .f-links a { font-size: 13px; color: var(--text2); text-decoration: none; transition: color 0.2s; }
     .f-links a:hover { color: var(--text3); }
     .f-copy { font-size: 13px; color: var(--text2); }
+
+    /* ── Scroll Reveal ── */
+    .sr {
+      opacity: 0;
+      transform: translateY(26px) translateZ(0);
+      transition: opacity 0.42s ease-out, transform 0.42s ease-out;
+      will-change: opacity, transform;
+    }
+    .sr.in {
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+    }
+    /* Hero content 不做reveal，直接显示 */
+    .hero-content { opacity: 1 !important; transform: none !important; }
   </style>
 </head>
 <body>
@@ -545,6 +559,65 @@ function toggleFaq(btn) {
   document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
   if (!wasOpen) item.classList.add('open');
 }
+
+/* ── Scroll Reveal + 3D Parallax ── */
+(function () {
+  // 1. 给目标元素打上 sr 类
+  const SEL = [
+    '.s-label', '.s-title', '.s-sub',
+    '.f-card', '.how-step', '.p-card',
+    '.faq-item',
+    '.cta-final .s-title', '.cta-final .s-sub',
+    '.cta-final .btn-primary', '.cta-final .hero-note',
+    'footer .f-logo', 'footer .f-links', 'footer .f-copy'
+  ].join(',');
+
+  document.querySelectorAll(SEL).forEach(el => {
+    // hero-content 内的元素跳过
+    if (!el.closest('.hero-content')) el.classList.add('sr');
+  });
+
+  // 2. 容器内子元素错落延迟
+  ['.features-grid', '.how-grid', '.pricing-grid', '.faq-list', 'footer'].forEach(sel => {
+    const wrap = document.querySelector(sel);
+    if (!wrap) return;
+    Array.from(wrap.querySelectorAll('.sr')).forEach((child, i) => {
+      child.style.transitionDelay = (i * 75) + 'ms';
+    });
+  });
+
+  // 3. IntersectionObserver — 进入淡入，向上离开淡出
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+      } else if (entry.boundingClientRect.top < 0) {
+        // 向上滚出视口才淡出（向下滚进视口不重置）
+        entry.target.classList.remove('in');
+      }
+    });
+  }, { threshold: 0.10, rootMargin: '0px 0px -44px 0px' });
+
+  document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+  // 4. 视差滚动（rAF节流，硬件加速）
+  const heroGrid = document.querySelector('.hero-grid');
+  const heroGlow = document.querySelector('.hero-glow');
+
+  let raf = false;
+  function onScroll() {
+    if (raf) return;
+    raf = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (heroGrid) heroGrid.style.transform = 'translateY(' + (y * 0.22) + 'px) translateZ(0)';
+      if (heroGlow) heroGlow.style.transform = 'translateX(-50%) translateY(' + (y * 0.35) + 'px) translateZ(0)';
+      raf = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
 </script>
 </body>
 </html>
