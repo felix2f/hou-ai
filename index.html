@@ -231,58 +231,131 @@
     .footer-links a:hover { color: var(--text); }
     .footer-copy { font-size: 12px; color: var(--text3); }
 
-    /* ── Stone texture: 三层互干涉，素数周期产生不规律感 ── */
+    /* ══════════════════════════════════════════
+       石材底层：#1a1a1a 基底 + 气孔颗粒纹理
+       ══════════════════════════════════════════ */
     .stone-layer {
       position: fixed; inset: 0; z-index: -1;
       pointer-events: none; user-select: none;
-      background-color: #060608;
-      animation: stone-breathe 31s ease-in-out infinite;
-    }
-    .stone-layer::before,
-    .stone-layer::after {
-      content: ''; position: absolute; inset: 0;
-    }
-    /* 层A：右下漂移，17s */
-    .stone-layer::before {
+      overflow: hidden;
+      background-color: #1a1a1a;
       background-image:
-        radial-gradient(circle, #2c2c32 1px,   transparent 0),
-        radial-gradient(circle, #242428 1.5px, transparent 0),
-        radial-gradient(circle, #30303a 1px,   transparent 0),
-        radial-gradient(circle, #282830 2px,   transparent 0),
-        radial-gradient(circle, #1e1e26 1px,   transparent 0);
-      background-size: 71px 71px;
-      background-position: 9px 6px, 38px 44px, 55px 20px, 14px 60px, 27px 33px;
-      animation: drift-a 17s linear infinite;
+        radial-gradient(circle, #2b2b2b 1px,   transparent 0),
+        radial-gradient(circle, #252525 1px,   transparent 0),
+        radial-gradient(circle, #2f2f2f 1.5px, transparent 0),
+        radial-gradient(circle, #232323 1px,   transparent 0),
+        radial-gradient(circle, #2d2d2d 1px,   transparent 0),
+        radial-gradient(circle, #272727 1.5px, transparent 0),
+        radial-gradient(circle, #303030 1px,   transparent 0);
+      background-size: 37px 41px, 53px 47px, 29px 67px, 71px 31px, 43px 59px, 61px 37px, 23px 53px;
+      background-position: 7px 3px, 19px 31px, 11px 22px, 34px 8px, 26px 47px, 8px 15px, 17px 40px;
     }
-    /* 层B：左下漂移（X反向），23s，与A错相位产生干涉 */
-    .stone-layer::after {
-      background-image:
-        radial-gradient(circle, #262634 1px,   transparent 0),
-        radial-gradient(circle, #20202c 1.5px, transparent 0),
-        radial-gradient(circle, #2e2e3c 1px,   transparent 0),
-        radial-gradient(circle, #222230 1px,   transparent 0);
-      background-size: 83px 83px;
-      background-position: 41px 11px, 21px 58px, 67px 34px, 7px 45px;
-      opacity: 0.65;
-      animation: drift-b 23s linear infinite;
+
+    /* ── 游走光斑：5 个尺寸各异、各走各路 ── */
+    .sl-orb {
+      position: absolute;
+      border-radius: 50%;
+      will-change: transform;
     }
-    /* 漂移：移动量 = 整数倍 background-size，确保无缝衔接 */
-    @keyframes drift-a {
-      from { background-position:  9px  6px, 38px 44px, 55px 20px, 14px 60px, 27px 33px; }
-      to   { background-position: 80px 77px,109px115px,126px 91px, 85px131px, 98px104px; }
+    /* 光斑1：280px，橙，11s，歪斜折返 */
+    .sl-o1 { width:280px; height:280px; top:8vh;  left:12vw;
+      background: radial-gradient(circle, rgba(255,69,0,.22) 0%, transparent 65%);
+      animation: orb1 11s ease-in-out infinite; }
+    @keyframes orb1 {
+      0%  { transform:translate(0,0);          animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      9%  { transform:translate(18vw,33vh);    animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      21% { transform:translate(4vw,60vh);     animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      38% { transform:translate(46vw,11vh);    animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      47% { transform:translate(63vw,72vh);    animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      61% { transform:translate(29vw,44vh);    animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      73% { transform:translate(-9vw,81vh);    animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      89% { transform:translate(56vw,23vh);    animation-timing-function:cubic-bezier(.23,1,.32,1); }
+     100% { transform:translate(0,0); }
     }
-    @keyframes drift-b {
-      from { background-position:  41px 11px,  21px 58px,  67px 34px,  7px 45px; }
-      to   { background-position: -42px 94px, -62px141px, -16px117px,-76px128px; }
+    /* 光斑2：210px，深橙，17s，X反向大幅摆荡 */
+    .sl-o2 { width:210px; height:210px; top:52vh; left:62vw;
+      background: radial-gradient(circle, rgba(204,55,0,.18) 0%, transparent 60%);
+      animation: orb2 17s linear infinite; }
+    @keyframes orb2 {
+      0%  { transform:translate(0,0);           animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      7%  { transform:translate(-23vw,-31vh);   animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      19% { transform:translate(14vw,-56vh);    animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      33% { transform:translate(-41vw,11vh);    animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      52% { transform:translate(7vw,36vh);      animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      64% { transform:translate(-16vw,22vh);    animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      79% { transform:translate(31vw,-26vh);    animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      91% { transform:translate(-6vw,46vh);     animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+     100% { transform:translate(0,0); }
     }
-    /* 亮度呼吸：非对称停点（30/60/80%），让节奏感消失 */
-    @keyframes stone-breathe {
-      0%   { filter: brightness(0.93); }
-      30%  { filter: brightness(1.06); }
-      60%  { filter: brightness(0.97); }
-      80%  { filter: brightness(1.08); }
-      100% { filter: brightness(0.93); }
+    /* 光斑3：420px，极淡，23s，大范围慢漂 */
+    .sl-o3 { width:420px; height:420px; top:65vh; left:22vw;
+      background: radial-gradient(circle, rgba(255,69,0,.09) 0%, transparent 55%);
+      animation: orb3 23s ease-in-out infinite; }
+    @keyframes orb3 {
+      0%  { transform:translate(0,0);           animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      14% { transform:translate(31vw,-41vh);    animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      29% { transform:translate(-21vw,-71vh);   animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      43% { transform:translate(51vw,-19vh);    animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      58% { transform:translate(9vw,21vh);      animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      71% { transform:translate(-36vw,-11vh);   animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      87% { transform:translate(21vw,-51vh);    animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+     100% { transform:translate(0,0); }
     }
+    /* 光斑4：160px，最亮最小最快，9s，短路感 */
+    .sl-o4 { width:160px; height:160px; top:24vh; left:77vw;
+      background: radial-gradient(circle, rgba(255,110,0,.26) 0%, transparent 55%);
+      animation: orb4 9s ease-in-out infinite; }
+    @keyframes orb4 {
+      0%  { transform:translate(0,0);           animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      11% { transform:translate(-31vw,41vh);    animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      28% { transform:translate(-62vw,-14vh);   animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      44% { transform:translate(-11vw,62vh);    animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      59% { transform:translate(9vw,21vh);      animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      77% { transform:translate(-51vw,36vh);    animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+     100% { transform:translate(0,0); }
+    }
+    /* 光斑5：300px，暗红，19s，中速蜿蜒 */
+    .sl-o5 { width:300px; height:300px; top:14vh; left:44vw;
+      background: radial-gradient(circle, rgba(180,40,0,.13) 0%, transparent 60%);
+      animation: orb5 19s linear infinite; }
+    @keyframes orb5 {
+      0%  { transform:translate(0,0);           animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      8%  { transform:translate(26vw,56vh);     animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      23% { transform:translate(-36vw,21vh);    animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+      39% { transform:translate(9vw,-31vh);     animation-timing-function:cubic-bezier(.23,1,.32,1); }
+      54% { transform:translate(41vw,66vh);     animation-timing-function:cubic-bezier(.25,.46,.45,.94); }
+      68% { transform:translate(-21vw,41vh);    animation-timing-function:cubic-bezier(.755,.05,.855,.06); }
+      81% { transform:translate(14vw,-51vh);    animation-timing-function:cubic-bezier(.68,-.55,.27,1.55); }
+     100% { transform:translate(0,0); }
+    }
+
+    /* ── 闪烁火花：12 个 2px 亮点，各自独立明灭 ── */
+    .sl-spark { position:absolute; width:2px; height:2px; border-radius:50%; background:#FF4500; will-change:opacity; }
+    .sl-s1  { top:12%; left:8%;  animation:flk1  2.3s ease-in-out infinite; }
+    .sl-s2  { top:28%; left:34%; animation:flk2  3.7s ease-in-out infinite  .5s; }
+    .sl-s3  { top:67%; left:17%; animation:flk3  1.9s ease-in-out infinite 1.2s; }
+    .sl-s4  { top:41%; left:55%; animation:flk4  4.1s ease-in-out infinite  .3s; }
+    .sl-s5  { top:83%; left:72%; animation:flk5  2.7s ease-in-out infinite 1.8s; }
+    .sl-s6  { top:19%; left:88%; animation:flk6  5.3s ease-in-out infinite  .7s; }
+    .sl-s7  { top:54%; left:43%; animation:flk7  3.1s ease-in-out infinite 2.1s; }
+    .sl-s8  { top:77%; left:91%; animation:flk8  1.7s ease-in-out infinite  .9s; }
+    .sl-s9  { top:6%;  left:61%; animation:flk9  4.7s ease-in-out infinite  .2s; }
+    .sl-s10 { top:93%; left:28%; animation:flk10 2.9s ease-in-out infinite 1.4s; }
+    .sl-s11 { top:37%; left:79%; animation:flk11 6.1s ease-in-out infinite  .6s; }
+    .sl-s12 { top:61%; left:6%;  animation:flk12 3.3s ease-in-out infinite 2.5s; }
+
+    @keyframes flk1  { 0%,100%{opacity:0} 15%,22%{opacity:.55} 40%{opacity:0} 70%,75%{opacity:.30} }
+    @keyframes flk2  { 0%,100%{opacity:0}  5%,12%{opacity:.45} 30%{opacity:0} 55%,65%{opacity:.60} 80%{opacity:0} }
+    @keyframes flk3  { 0%,100%{opacity:0} 25%,30%{opacity:.50} 50%,55%{opacity:.20} }
+    @keyframes flk4  { 0%,100%{opacity:0}  8%,11%{opacity:.35} 45%{opacity:0} 75%,82%{opacity:.55} }
+    @keyframes flk5  { 0%,100%{opacity:0} 20%,26%{opacity:.60} 60%{opacity:0} 85%,90%{opacity:.25} }
+    @keyframes flk6  { 0%,100%{opacity:0}  3%, 7%{opacity:.40} 35%{opacity:0} 60%,68%{opacity:.50} 90%{opacity:0} }
+    @keyframes flk7  { 0%,100%{opacity:0} 30%,36%{opacity:.45} 70%,73%{opacity:.30} }
+    @keyframes flk8  { 0%,100%{opacity:0} 10%,15%{opacity:.60} 45%,50%{opacity:.20} 80%{opacity:0} }
+    @keyframes flk9  { 0%,100%{opacity:0} 18%,23%{opacity:.35} 55%{opacity:0} 78%,85%{opacity:.55} }
+    @keyframes flk10 { 0%,100%{opacity:0}  6%,10%{opacity:.50} 40%,45%{opacity:.15} 70%{opacity:0} }
+    @keyframes flk11 { 0%,100%{opacity:0} 22%,28%{opacity:.40} 50%{opacity:0} 75%,80%{opacity:.60} }
+    @keyframes flk12 { 0%,100%{opacity:0} 12%,17%{opacity:.55} 42%,48%{opacity:.20} 88%{opacity:0} }
 
     /* ── Scroll Reveal ── */
     .sr { opacity: 0; transition: opacity 0.45s ease-out, transform 0.45s ease-out; will-change: opacity, transform; }
@@ -294,8 +367,26 @@
 </head>
 <body>
 
-<!-- 石材底纹 (CSS pure) -->
-<div class="stone-layer" aria-hidden="true"></div>
+<!-- 石材底纹 -->
+<div class="stone-layer" aria-hidden="true">
+  <div class="sl-orb sl-o1"></div>
+  <div class="sl-orb sl-o2"></div>
+  <div class="sl-orb sl-o3"></div>
+  <div class="sl-orb sl-o4"></div>
+  <div class="sl-orb sl-o5"></div>
+  <div class="sl-spark sl-s1"></div>
+  <div class="sl-spark sl-s2"></div>
+  <div class="sl-spark sl-s3"></div>
+  <div class="sl-spark sl-s4"></div>
+  <div class="sl-spark sl-s5"></div>
+  <div class="sl-spark sl-s6"></div>
+  <div class="sl-spark sl-s7"></div>
+  <div class="sl-spark sl-s8"></div>
+  <div class="sl-spark sl-s9"></div>
+  <div class="sl-spark sl-s10"></div>
+  <div class="sl-spark sl-s11"></div>
+  <div class="sl-spark sl-s12"></div>
+</div>
 
 <!-- 导航 -->
 <nav>
