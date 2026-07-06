@@ -326,15 +326,16 @@
     /* ── Scroll Reveal ── */
     .sr {
       opacity: 0;
-      transform: translateY(26px) translateZ(0);
-      transition: opacity 0.42s ease-out, transform 0.42s ease-out;
+      transition: opacity 0.48s ease-out, transform 0.48s ease-out;
       will-change: opacity, transform;
     }
+    .sr.from-left  { transform: translateX(-72px) translateZ(0); }
+    .sr.from-right { transform: translateX(72px) translateZ(0); }
+    .sr.from-bottom{ transform: translateY(36px) translateZ(0); }
     .sr.in {
       opacity: 1;
-      transform: translateY(0) translateZ(0);
+      transform: translate(0, 0) translateZ(0) !important;
     }
-    /* Hero content 不做reveal，直接显示 */
     .hero-content { opacity: 1 !important; transform: none !important; }
   </style>
 </head>
@@ -562,29 +563,49 @@ function toggleFaq(btn) {
 
 /* ── Scroll Reveal + 3D Parallax ── */
 (function () {
-  // 1. 给目标元素打上 sr 类
-  const SEL = [
-    '.s-label', '.s-title', '.s-sub',
-    '.f-card', '.how-step', '.p-card',
-    '.faq-item',
-    '.cta-final .s-title', '.cta-final .s-sub',
-    '.cta-final .btn-primary', '.cta-final .hero-note',
-    'footer .f-logo', 'footer .f-links', 'footer .f-copy'
-  ].join(',');
-
-  document.querySelectorAll(SEL).forEach(el => {
-    // hero-content 内的元素跳过
-    if (!el.closest('.hero-content')) el.classList.add('sr');
+  // 1. section 标题/标签从左进入
+  document.querySelectorAll('.s-label, .s-title, .s-sub').forEach(el => {
+    if (el.closest('.hero-content') || el.closest('.cta-final')) return;
+    el.classList.add('sr', 'from-left');
   });
 
-  // 2. 容器内子元素错落延迟
-  ['.features-grid', '.how-grid', '.pricing-grid', '.faq-list', 'footer'].forEach(sel => {
-    const wrap = document.querySelector(sel);
-    if (!wrap) return;
-    Array.from(wrap.querySelectorAll('.sr')).forEach((child, i) => {
-      child.style.transitionDelay = (i * 75) + 'ms';
-    });
+  // 2. 功能卡片：左 / 底 / 右
+  const fcards = document.querySelectorAll('.f-card');
+  const fdirs = ['from-left', 'from-bottom', 'from-right'];
+  fcards.forEach((el, i) => {
+    el.classList.add('sr', fdirs[i % 3]);
+    el.style.transitionDelay = (i * 90) + 'ms';
   });
+
+  // 3. How步骤：左→底→右
+  document.querySelectorAll('.how-step').forEach((el, i) => {
+    const dirs = ['from-left', 'from-bottom', 'from-right'];
+    el.classList.add('sr', dirs[i % 3]);
+    el.style.transitionDelay = (i * 100) + 'ms';
+  });
+
+  // 4. 定价卡片：左 / 右
+  document.querySelectorAll('.p-card').forEach((el, i) => {
+    el.classList.add('sr', i % 2 === 0 ? 'from-left' : 'from-right');
+    el.style.transitionDelay = (i * 100) + 'ms';
+  });
+
+  // 5. FAQ：奇左偶右
+  document.querySelectorAll('.faq-item').forEach((el, i) => {
+    el.classList.add('sr', i % 2 === 0 ? 'from-left' : 'from-right');
+    el.style.transitionDelay = (i * 60) + 'ms';
+  });
+
+  // 6. CTA 区域：从底部进入
+  document.querySelectorAll('.cta-final .s-title, .cta-final .s-sub, .cta-final .btn-primary, .cta-final .hero-note').forEach((el, i) => {
+    el.classList.add('sr', 'from-bottom');
+    el.style.transitionDelay = (i * 80) + 'ms';
+  });
+
+  // 7. Footer：左中右
+  const fItems = document.querySelectorAll('footer .f-logo, footer .f-links, footer .f-copy');
+  const fDirs = ['from-left', 'from-bottom', 'from-right'];
+  fItems.forEach((el, i) => el.classList.add('sr', fDirs[i] || 'from-bottom'));
 
   // 3. IntersectionObserver — 进入淡入，向上离开淡出
   const io = new IntersectionObserver(entries => {
