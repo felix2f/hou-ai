@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/chat", "destination": "/chat.html" },
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ]
 }
