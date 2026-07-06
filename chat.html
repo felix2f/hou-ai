@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOU · AI决策引擎</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #020204;
+      --surface: #0e0e12;
+      --surface2: #16161c;
+      --border: #1e1e28;
+      --primary: #FF4500;
+      --primary2: #FF8C00;
+      --accent: #00D4FF;
+      --glow: rgba(255,69,0,0.35);
+      --glow-blue: rgba(0,212,255,0.2);
+      --text: #e8e8f0;
+      --text2: #44445a;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+    }
+
+
+    #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ── 登录页 ── */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      padding: 8vh 0 7vh;
+    }
+    .login-top { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .login-tag {
+      font-size: 11px; font-weight: 400; letter-spacing: 5px;
+      text-transform: uppercase; margin-bottom: 14px;
+      color: rgba(255,255,255,0.32);
+    }
+    .login-logo {
+      font-size: 72px; font-weight: 900; letter-spacing: -4px;
+      background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 40px rgba(255,69,0,0.55));
+      line-height: 1;
+      animation: logoGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes logoGlow {
+      from { filter: drop-shadow(0 0 24px rgba(255,69,0,0.40)); }
+      to   { filter: drop-shadow(0 0 60px rgba(255,140,0,0.65)); }
+    }
+    .login-bottom { display: flex; flex-direction: column; align-items: center; }
+    .login-sub {
+      color: rgba(255,255,255,0.20); font-size: 11px; letter-spacing: 2px;
+      margin-bottom: 18px; text-align: center; line-height: 1.8;
+    }
+    .login-sub .line2 { display: block; font-size: 12px; color: rgba(255,255,255,0.22); letter-spacing: 2px; }
+    .login-card {
+      background: rgba(4,8,18,0.72); backdrop-filter: blur(36px) saturate(1.2);
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 20px;
+      padding: 36px; width: 340px;
+      box-shadow: 0 0 100px rgba(0,0,0,0.85), 0 0 50px rgba(224,102,8,0.06),
+                  inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .login-label { font-size: 11px; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; margin-bottom: 10px; }
+    .login-card input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 15px;
+      outline: none; margin-bottom: 16px; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 20px rgba(255,69,0,0.2); }
+    .login-card input::placeholder { color: #2a2a38; }
+    .login-err { color: #ff4444; font-size: 12px; margin-bottom: 12px; display: none; }
+    .btn-fire {
+      width: 100%; background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 10px; padding: 14px;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+      letter-spacing: 2px; position: relative; overflow: hidden;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-fire::before {
+      content: ''; position: absolute; top: -50%; left: -60%;
+      width: 40%; height: 200%; background: rgba(255,255,255,0.15);
+      transform: skewX(-20deg); animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer { 0% { left: -60%; } 100% { left: 140%; } }
+    .btn-fire:hover { opacity: 0.88; }
+    .btn-fire:active { transform: scale(0.98); }
+
+    /* ── 聊天页 ── */
+    #chatScreen {
+      display: flex; flex-direction: row; height: 100vh; position: relative; z-index: 5;
+    }
+
+    /* ── 侧边栏 ── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: rgba(10,10,14,0.95);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: relative; z-index: 6;
+      transition: transform 0.25s ease;
+    }
+    .sidebar-header {
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .s-logo {
+      font-size: 20px; font-weight: 900; letter-spacing: -1px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255,69,0,0.4));
+    }
+    .s-new {
+      background: none; border: 1px solid var(--border); border-radius: 7px;
+      width: 30px; height: 30px; cursor: pointer; color: var(--text2);
+      font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .s-new:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px var(--glow); }
+    .history-list {
+      flex: 1; overflow-y: auto; padding: 8px 6px;
+    }
+    .history-list::-webkit-scrollbar { width: 2px; }
+    .history-list::-webkit-scrollbar-thumb { background: #1e1e28; border-radius: 2px; }
+    .history-empty {
+      padding: 28px 12px; text-align: center;
+      color: var(--text2); font-size: 12px; letter-spacing: 0.5px; line-height: 1.8;
+    }
+    .history-item {
+      padding: 9px 12px; border-radius: 8px; cursor: pointer;
+      margin-bottom: 2px; transition: background 0.15s;
+      border: 1px solid transparent;
+      position: relative;
+    }
+    .history-item:hover { background: var(--surface2); }
+    .history-item.active {
+      background: rgba(255,69,0,0.08);
+      border-color: rgba(255,69,0,0.2);
+    }
+    .hi-title {
+      font-size: 13px; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hi-time { font-size: 10px; color: var(--text2); margin-top: 3px; }
+    .hi-del {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text2); cursor: pointer;
+      font-size: 14px; opacity: 0; transition: opacity 0.15s;
+      padding: 2px 4px; border-radius: 4px;
+    }
+    .history-item:hover .hi-del { opacity: 1; }
+    .hi-del:hover { color: #ff4444; }
+
+    /* 移动端侧边栏遮罩 */
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; z-index: 5;
+      background: rgba(0,0,0,0.6);
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* ── 主聊天区 ── */
+    .chat-main {
+      flex: 1; display: flex; flex-direction: column; min-width: 0;
+    }
+    .chat-header {
+      background: rgba(14,14,18,0.9); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .h-left { display: flex; align-items: center; gap: 12px; }
+    .h-menu {
+      display: none; background: none; border: none;
+      color: var(--text2); cursor: pointer; font-size: 18px; padding: 4px;
+    }
+    .h-logo {
+      font-size: 20px; font-weight: 900; letter-spacing: -1px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255,69,0,0.4));
+    }
+    .h-divider { width: 1px; height: 16px; background: var(--border); }
+    .h-model {
+      font-size: 11px; color: var(--text2); letter-spacing: 1px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .h-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #FF4500; box-shadow: 0 0 6px #FF4500;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .messages {
+      flex: 1; overflow-y: auto; padding: 28px 28px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: #1e1e28; border-radius: 2px; }
+
+    .msg {
+      max-width: 76%; line-height: 1.75; font-size: 15px;
+      padding: 14px 18px; border-radius: 14px; word-break: break-word;
+    }
+    .msg.user {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      color: #fff; align-self: flex-end; border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 24px rgba(255,69,0,0.3);
+    }
+    .msg.bot {
+      background: rgba(22,22,28,0.95); border: 1px solid var(--border);
+      align-self: flex-start; border-bottom-left-radius: 4px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .msg.bot strong { color: #FF8C00; }
+
+    .empty-hint {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px; user-select: none;
+    }
+    .empty-big {
+      font-size: 52px; font-weight: 900; letter-spacing: -3px;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 30px rgba(255,69,0,0.35));
+    }
+    .empty-small { font-size: 12px; color: var(--text2); letter-spacing: 3px; }
+    .empty-tags { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+    .tag {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 14px; font-size: 11px; color: var(--text2);
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .tag:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px var(--glow); }
+
+    .typing {
+      display: flex; gap: 5px; align-items: center;
+      padding: 16px 18px; align-self: flex-start;
+      background: rgba(22,22,28,0.95); border: 1px solid var(--border);
+      border-radius: 14px; border-bottom-left-radius: 4px;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.18s; }
+    .dot:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); opacity: 0.3; }
+      40% { transform: translateY(-7px); opacity: 1; }
+    }
+
+    .input-area {
+      background: rgba(14,14,18,0.9); backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end;
+      flex-shrink: 0;
+    }
+    #userInput {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 16px; color: var(--text); font-size: 15px;
+      outline: none; resize: none; min-height: 48px; max-height: 160px;
+      line-height: 1.6; font-family: inherit;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    #userInput:focus { border-color: var(--primary); box-shadow: 0 0 20px rgba(255,69,0,0.15); }
+    #userInput::placeholder { color: #2a2a38; }
+    .send-btn {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 12px; width: 48px; height: 48px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 0 20px rgba(255,69,0,0.3);
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+    .send-btn:hover { opacity: 0.88; box-shadow: 0 0 30px rgba(255,69,0,0.5); }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn svg { width: 20px; height: 20px; fill: white; }
+
+    .cursor { display: inline-block; width: 2px; height: 1em; background: var(--primary); margin-left: 2px; vertical-align: text-bottom; animation: cur 0.8s step-end infinite; }
+    @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── 副业诊断模态框 ── */
+    .diagnose-modal {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .diagnose-modal.show { display: flex; }
+    .diagnose-box {
+      background: var(--surface); border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 22px; padding: 36px 32px; width: 480px; max-width: 94vw;
+      box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 40px rgba(255,69,0,0.1),
+                  inset 0 1px 0 rgba(255,255,255,0.04);
+      position: relative;
+    }
+    .d-top-label {
+      font-size: 10px; letter-spacing: 4px; color: var(--primary);
+      text-transform: uppercase; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .d-top-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,69,0,0.3), transparent); }
+    .d-step-bar { display: flex; gap: 5px; margin-bottom: 26px; }
+    .d-step-dot {
+      flex: 1; height: 3px; border-radius: 3px;
+      background: var(--border); transition: background 0.3s;
+    }
+    .d-step-dot.done { background: rgba(255,69,0,0.5); }
+    .d-step-dot.active { background: linear-gradient(90deg, #FF4500, #FF8C00); box-shadow: 0 0 8px rgba(255,69,0,0.4); }
+    .d-question {
+      font-size: 17px; font-weight: 600; color: var(--text);
+      margin-bottom: 22px; line-height: 1.55; letter-spacing: 0.2px;
+    }
+    .d-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
+    .d-option {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 18px;
+      cursor: pointer; color: #8888a0; font-size: 14px;
+      transition: all 0.18s; text-align: left; line-height: 1.4;
+    }
+    .d-option:hover { border-color: rgba(255,69,0,0.4); color: var(--text); background: rgba(255,69,0,0.04); }
+    .d-option.selected {
+      border-color: var(--primary); color: var(--text);
+      background: rgba(255,69,0,0.08); box-shadow: 0 0 14px rgba(255,69,0,0.12);
+    }
+    .d-nav { display: flex; justify-content: space-between; align-items: center; }
+    .d-back {
+      background: none; border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 20px;
+      color: var(--text2); cursor: pointer; font-size: 13px; transition: all 0.2s;
+    }
+    .d-back:hover { border-color: #3a3a50; color: var(--text); }
+    .d-next {
+      background: linear-gradient(135deg, #FF4500, #FF8C00);
+      border: none; border-radius: 9px; padding: 11px 26px;
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      letter-spacing: 1px; transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(255,69,0,0.25);
+    }
+    .d-next:hover { opacity: 0.88; box-shadow: 0 0 28px rgba(255,69,0,0.4); }
+    .d-next:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+    .d-close {
+      position: absolute; top: 18px; right: 22px;
+      background: none; border: none; color: var(--text2);
+      cursor: pointer; font-size: 20px; line-height: 1; transition: color 0.2s;
+    }
+    .d-close:hover { color: var(--text); }
+    .diagnose-tag {
+      background: rgba(255,69,0,0.1); border: 1px solid rgba(255,69,0,0.3) !important;
+      color: var(--primary) !important;
+    }
+    .diagnose-tag:hover { background: rgba(255,69,0,0.18) !important; box-shadow: 0 0 14px rgba(255,69,0,0.2) !important; }
+
+    /* 移动端适配 */
+    @media (max-width: 680px) {
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 20;
+        transform: translateX(-100%);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .h-menu { display: block; }
+      .chat-header { padding: 0 16px; }
+      .messages { padding: 20px 16px; }
+      .input-area { padding: 12px 16px; }
+      .msg { max-width: 90%; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- 副业诊断模态框 -->
+<div class="diagnose-modal" id="diagnoseModal">
+  <div class="diagnose-box">
+    <button class="d-close" onclick="closeDiagnose()">×</button>
+    <div class="d-top-label">副业诊断</div>
+    <div class="d-step-bar" id="dStepBar"></div>
+    <div class="d-question" id="dQuestion"></div>
+    <div class="d-options" id="dOptions"></div>
+    <div class="d-nav">
+      <button class="d-back" id="dBack" onclick="prevStep()">← 上一步</button>
+      <button class="d-next" id="dNext" onclick="nextStep()" disabled>继续 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 聊天页 -->
+<div id="chatScreen">
+  <!-- 侧边栏遮罩（移动端） -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- 侧边栏 -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="s-logo">HOU</div>
+      <button class="s-new" title="新对话" onclick="newChat()">＋</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">还没有历史对话<br>开始你的第一次对话</div>
+    </div>
+  </div>
+
+  <!-- 主聊天区 -->
+  <div class="chat-main">
+    <div class="chat-header">
+      <div class="h-left">
+        <button class="h-menu" onclick="toggleSidebar()">☰</button>
+        <div class="h-logo">HOU</div>
+        <div class="h-divider"></div>
+        <div class="h-model"><div class="h-dot"></div>DeepSeek V4 Pro</div>
+      </div>
+    </div>
+    <div id="messages" class="messages"></div>
+    <div class="input-area">
+      <textarea id="userInput" placeholder="生意遇到瓶颈？决策拿不定？说出来…" rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── 游艇海湾背景 ── */
+(function(){
+  'use strict';
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+
+  function resize(){ W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const STARS = Array.from({length:220},()=>{
+    const y = Math.random();
+    return { x:Math.random(), y:y*y*0.38, r:0.18+Math.random()*1.4,
+             phase:Math.random()*Math.PI*2, spd:0.003+Math.random()*0.020 };
+  });
+
+  const GLINTS = Array.from({length:440},()=>{
+    const ry = Math.pow(Math.random(),0.72), rx = Math.random();
+    return { rx, ry, inSunset:Math.abs(rx-0.5)<0.062+ry*0.38,
+             inMoon:Math.abs(rx-0.175)<0.018+ry*0.10,
+             phase:Math.random()*Math.PI*2, spd:0.07+Math.random()*0.20,
+             size:0.22+Math.random()*1.35 };
+  });
+
+  function sailingYacht(ctx){
+    ctx.beginPath(); ctx.moveTo(-74,0);
+    ctx.bezierCurveTo(-62,13,56,13,63,3); ctx.lineTo(76,-2); ctx.lineTo(-63,-2); ctx.closePath();
+    ctx.fillStyle='#030c18'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-63,-1.5); ctx.lineTo(74,-1.5);
+    ctx.strokeStyle='rgba(65,130,185,0.18)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='#051228';
+    ctx.beginPath(); ctx.rect(-14,-21,41,19); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-14,-21,6,4,0,Math.PI,0); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(27,-21,6,4,0,Math.PI,0); ctx.fill();
+    [[-8,-16],[9,-16],[26,-16]].forEach(([px,py])=>{
+      const h=ctx.createRadialGradient(px+3,py+3,0,px+3,py+3,11);
+      h.addColorStop(0,'rgba(255,188,48,0.30)'); h.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=h; ctx.beginPath(); ctx.arc(px+3,py+3,11,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(px+3,py+3,5.5,4,0,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,190,50,0.70)'; ctx.fill();
+    });
+    ctx.lineWidth=0.55; ctx.strokeStyle='rgba(5,11,26,0.58)';
+    ctx.beginPath(); ctx.moveTo(10,-2); ctx.lineTo(10,-116); ctx.lineWidth=2.0; ctx.stroke();
+    ctx.lineWidth=0.55;
+    [[10,-113,-56,-1],[10,-113,-38,-1],[10,-85,38,-2],[10,-85,-34,-2]].forEach(([x1,y1,x2,y2])=>{
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    });
+    ctx.beginPath(); ctx.moveTo(10,-11); ctx.lineTo(66,-11);
+    ctx.strokeStyle='#04101e'; ctx.lineWidth=1.4; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(10,-112); ctx.lineTo(66,-11); ctx.lineTo(10,-11); ctx.closePath();
+    ctx.fillStyle='rgba(7,18,44,0.84)'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(10,-94); ctx.lineTo(-57,-1); ctx.lineTo(10,-1); ctx.closePath();
+    ctx.fillStyle='rgba(6,14,36,0.75)'; ctx.fill();
+    const mhl=ctx.createRadialGradient(10,-115,0,10,-115,9);
+    mhl.addColorStop(0,'rgba(255,255,215,0.55)'); mhl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=mhl; ctx.beginPath(); ctx.arc(10,-115,9,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10,-115,1.6,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,228,0.92)'; ctx.fill();
+  }
+
+  function motorYacht(ctx){
+    ctx.beginPath(); ctx.moveTo(-126,0);
+    ctx.bezierCurveTo(-112,17,103,17,116,6); ctx.lineTo(130,-2); ctx.lineTo(-113,-2); ctx.closePath();
+    ctx.fillStyle='#030b19'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-113,7); ctx.lineTo(115,7);
+    ctx.strokeStyle='rgba(72,12,6,0.38)'; ctx.lineWidth=3; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-113,-1.5); ctx.lineTo(128,-1.5);
+    ctx.strokeStyle='rgba(55,125,180,0.16)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-86,-2); ctx.lineTo(-86,-36); ctx.lineTo(82,-36); ctx.lineTo(92,-2); ctx.closePath();
+    ctx.fillStyle='#051122'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-86,-36); ctx.lineTo(82,-36);
+    ctx.strokeStyle='rgba(28,55,95,0.22)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-56,-36); ctx.lineTo(-56,-60); ctx.lineTo(67,-60); ctx.lineTo(76,-36); ctx.closePath();
+    ctx.fillStyle='#061426'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-25,-60); ctx.lineTo(-25,-76); ctx.lineTo(46,-76); ctx.lineTo(52,-60); ctx.closePath();
+    ctx.fillStyle='#07192e'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(10,-76); ctx.lineTo(10,-106); ctx.strokeStyle='#040e1c'; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(10,-101); ctx.lineTo(28,-101); ctx.strokeStyle='#040e1c'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(19,-101,11,2.8,0,0,Math.PI*2); ctx.fillStyle='#030a0f'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-6,-76); ctx.lineTo(-6,-114); ctx.strokeStyle='rgba(4,11,22,0.65)'; ctx.lineWidth=0.8; ctx.stroke();
+    for(let i=-70;i<=64;i+=27){
+      const wg=ctx.createRadialGradient(i+8,-21,0,i+8,-21,18);
+      wg.addColorStop(0,'rgba(255,188,48,0.24)'); wg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=wg; ctx.beginPath(); ctx.arc(i+8,-21,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,190,50,0.46)'; ctx.fillRect(i,-31,17,11);
+    }
+    ctx.fillStyle='rgba(255,178,40,0.36)';
+    for(let i=-43;i<=52;i+=27) ctx.fillRect(i,-56,15,10);
+    ctx.fillStyle='rgba(155,198,255,0.24)';
+    [[-19,-73],[-2,-73],[15,-73],[31,-73]].forEach(([x,y])=>ctx.fillRect(x,y,12,9));
+    const pgl=ctx.createRadialGradient(-116,-4,0,-116,-4,14);
+    pgl.addColorStop(0,'rgba(220,28,18,0.42)'); pgl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=pgl; ctx.beginPath(); ctx.arc(-116,-4,14,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-116,-4,2.4,0,Math.PI*2); ctx.fillStyle='rgba(255,45,25,0.88)'; ctx.fill();
+    const sgl=ctx.createRadialGradient(112,-7,0,112,-7,13);
+    sgl.addColorStop(0,'rgba(18,195,78,0.38)'); sgl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sgl; ctx.beginPath(); ctx.arc(112,-7,13,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(112,-7,2.4,0,Math.PI*2); ctx.fillStyle='rgba(35,215,85,0.88)'; ctx.fill();
+    const mhg=ctx.createRadialGradient(10,-105,0,10,-105,15);
+    mhg.addColorStop(0,'rgba(255,255,218,0.48)'); mhg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=mhg; ctx.beginPath(); ctx.arc(10,-105,15,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10,-105,2.2,0,Math.PI*2); ctx.fillStyle='rgba(255,255,232,0.94)'; ctx.fill();
+    const stg=ctx.createRadialGradient(-112,4,0,-112,4,36);
+    stg.addColorStop(0,'rgba(255,212,90,0.17)'); stg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=stg; ctx.beginPath(); ctx.arc(-112,4,36,0,Math.PI*2); ctx.fill();
+  }
+
+  const YACHTS = [
+    {fn:sailingYacht,rx:0.14,sc:0.47,bob:0.60,bp:0.40,tilt:0.009,sternOff:-74},
+    {fn:motorYacht,  rx:0.55,sc:0.78,bob:0.36,bp:0.00,tilt:0.004,sternOff:-126},
+    {fn:sailingYacht,rx:0.85,sc:0.32,bob:0.82,bp:2.25,tilt:0.013,sternOff:-74},
+  ];
+
+  function render(){
+    if(!reduced) t+=0.010;
+    ctx.clearRect(0,0,W,H);
+    const hY=H*0.43;
+
+    const sky=ctx.createLinearGradient(0,0,0,hY);
+    sky.addColorStop(0,'#010307'); sky.addColorStop(0.28,'#050c1c');
+    sky.addColorStop(0.60,'#0b1932'); sky.addColorStop(0.83,'#3b1303'); sky.addColorStop(1,'#8b3007');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,hY);
+
+    const hrg=ctx.createRadialGradient(W*.5,hY,0,W*.5,hY,W*.52);
+    hrg.addColorStop(0,'rgba(224,102,8,0.58)'); hrg.addColorStop(0.17,'rgba(166,60,6,0.30)');
+    hrg.addColorStop(0.43,'rgba(64,18,2,0.09)'); hrg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=hrg; ctx.fillRect(0,hY-H*.24,W,H*.48);
+
+    STARS.forEach(s=>{
+      const tw=0.5+0.5*Math.sin(s.phase+t*s.spd*5.5);
+      const fade=clamp(1-(s.y-0.27)/0.11,0,1);
+      const a=clamp(tw*(0.20+(0.38-s.y)*0.72)*fade,0,0.88);
+      ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r*(0.6+tw*0.4),0,Math.PI*2);
+      ctx.fillStyle=`rgba(206,224,255,${a})`; ctx.fill();
+    });
+
+    const mx=W*.175,my=H*.11,mr=17;
+    const cna=ctx.createRadialGradient(mx,my,mr*.85,mx,my,mr*5.8);
+    cna.addColorStop(0,'rgba(234,220,168,0.13)'); cna.addColorStop(0.4,'rgba(198,182,128,0.05)'); cna.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cna; ctx.beginPath(); ctx.arc(mx,my,mr*5.8,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(mx,my,mr,0,Math.PI*2); ctx.fillStyle='#efe4ba'; ctx.fill();
+    ctx.beginPath(); ctx.arc(mx+mr*.54,my-mr*.09,mr*.90,0,Math.PI*2); ctx.fillStyle='#060d1b'; ctx.fill();
+    const mlp=ctx.createLinearGradient(0,hY,0,H);
+    mlp.addColorStop(0,'rgba(234,220,168,0.24)'); mlp.addColorStop(0.3,'rgba(198,184,138,0.11)'); mlp.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=mlp;
+    const mw0=W*.017,mwH=W*.12;
+    ctx.beginPath(); ctx.moveTo(mx-mw0,hY); ctx.lineTo(mx+mw0,hY);
+    ctx.lineTo(mx+mwH,H); ctx.lineTo(mx-mwH,H); ctx.closePath(); ctx.fill();
+
+    [{rx:.33,ry:-.082,rw:.17,rh:.009,ro:-.055},{rx:.70,ry:-.108,rw:.12,rh:.007,ro:.040}].forEach(c=>{
+      const cx=W*c.rx,cy=hY+H*c.ry,cw=W*c.rw,ch=H*c.rh;
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(c.ro); ctx.translate(-cx,-cy);
+      ctx.beginPath(); ctx.ellipse(cx,cy,cw*.5,ch*.5,0,0,Math.PI*2);
+      ctx.fillStyle='rgba(26,9,2,0.24)'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx,cy+ch*.26,cw*.48,ch*.28,0,0,Math.PI);
+      ctx.strokeStyle='rgba(205,86,9,0.22)'; ctx.lineWidth=1.2; ctx.stroke();
+      ctx.restore();
+    });
+
+    const wbg=ctx.createLinearGradient(0,hY,0,H);
+    wbg.addColorStop(0,'#0a1b33'); wbg.addColorStop(0.25,'#060d1f');
+    wbg.addColorStop(0.78,'#02070e'); wbg.addColorStop(1,'#010306');
+    ctx.fillStyle=wbg; ctx.fillRect(0,hY,W,H-hY);
+
+    const ssg=ctx.createLinearGradient(0,hY,0,H);
+    ssg.addColorStop(0,'rgba(224,102,8,0.55)'); ssg.addColorStop(0.33,'rgba(170,64,7,0.24)');
+    ssg.addColorStop(0.72,'rgba(84,29,3,0.07)'); ssg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=ssg;
+    const sw0=W*.060,swH=W*.40;
+    ctx.beginPath(); ctx.moveTo(W*.5-sw0,hY); ctx.lineTo(W*.5+sw0,hY);
+    ctx.lineTo(W*.5+swH,H); ctx.lineTo(W*.5-swH,H); ctx.closePath(); ctx.fill();
+
+    for(let i=0;i<30;i++){
+      const p=i/30, y=hY+(H-hY)*Math.pow(p,1.22);
+      const amp=1.4+p*11, f1=0.018-p*.010, sp=t*(0.52+p*1.6), a=0.008+p*0.044;
+      ctx.beginPath(); ctx.moveTo(0,y);
+      for(let x=0;x<=W;x+=4){
+        ctx.lineTo(x,y+Math.sin(x*f1+sp)*amp+Math.sin(x*f1*2.4-sp*.65)*amp*.40+Math.sin(x*f1*.55+sp*.28)*amp*.18);
+      }
+      ctx.strokeStyle=`rgba(68,144,208,${a})`; ctx.lineWidth=0.62; ctx.stroke();
+    }
+
+    GLINTS.forEach(gl=>{
+      const bri=(Math.sin(gl.phase+t*gl.spd*8)+1)*0.5;
+      if(bri<0.52) return;
+      const a=(bri-0.52)/0.48, x=gl.rx*W, y=hY+gl.ry*(H-hY);
+      let color,radius;
+      if(gl.inSunset){ color=`rgba(255,200,75,${a*.78*(1-gl.ry*.38)})`; radius=gl.size*(0.65+bri*.5); }
+      else if(gl.inMoon){ color=`rgba(228,218,172,${a*.52*(1-gl.ry*.44)})`; radius=gl.size*.68; }
+      else{ color=`rgba(148,206,238,${a*.20*(1-gl.ry*.55)})`; radius=gl.size*.55; }
+      ctx.beginPath(); ctx.arc(x,y,radius,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+      if(bri>0.90&&gl.size>0.88&&(gl.inSunset||gl.inMoon)){
+        const cr=radius*3.2;
+        ctx.beginPath(); ctx.moveTo(x-cr,y); ctx.lineTo(x+cr,y); ctx.moveTo(x,y-cr); ctx.lineTo(x,y+cr);
+        ctx.strokeStyle=gl.inSunset?`rgba(255,210,88,${a*.27})`:`rgba(232,225,175,${a*.20})`;
+        ctx.lineWidth=0.45; ctx.stroke();
+      }
+    });
+
+    for(let i=0;i<25;i++){
+      const lx=W*(0.66+i/25*0.30),ly=hY+Math.sin(i*4.4+1.1)*5-2;
+      const lb=0.27+.22*Math.sin(t*.60+i*1.95), ls=0.62+Math.sin(i*2.7)*.52;
+      const lh=ctx.createRadialGradient(lx,ly,0,lx,ly,9);
+      lh.addColorStop(0,`rgba(255,210,120,${lb*.46})`); lh.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lh; ctx.beginPath(); ctx.arc(lx,ly,9,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(lx,ly,ls,0,Math.PI*2); ctx.fillStyle=`rgba(255,210,118,${lb})`; ctx.fill();
+      const lrg=ctx.createLinearGradient(0,hY,0,hY+(H-hY)*.088);
+      lrg.addColorStop(0,`rgba(255,188,72,${lb*.22})`); lrg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lrg; ctx.fillRect(lx-1.5,hY,3,(H-hY)*.088);
+    }
+
+    ctx.beginPath(); ctx.moveTo(0,hY+5);
+    ctx.bezierCurveTo(W*.04,hY-20,W*.10,hY-34,W*.16,hY-22);
+    ctx.bezierCurveTo(W*.19,hY-13,W*.22,hY-4,W*.26,hY+3);
+    ctx.lineTo(0,hY+3); ctx.closePath(); ctx.fillStyle='rgba(1,4,11,0.92)'; ctx.fill();
+    [[W*.055,hY-11,4,14],[W*.085,hY-21,6,23],[W*.105,hY-17,5,19],[W*.135,hY-10,4,13]].forEach(([bx,by,bw,bh])=>{
+      ctx.fillStyle='rgba(1,3,9,0.96)'; ctx.fillRect(bx-bw/2,by,bw,bh);
+    });
+    [[.05,-7],[.08,-16],[.09,-22],[.11,-18],[.14,-10],[.18,-5]].forEach(([rx,dy])=>{
+      const lx=W*rx,ly=hY+dy;
+      const hg=ctx.createRadialGradient(lx,ly,0,lx,ly,7);
+      hg.addColorStop(0,'rgba(255,198,88,0.34)'); hg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(lx,ly,7,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(lx,ly,0.9,0,Math.PI*2); ctx.fillStyle='rgba(255,198,86,0.64)'; ctx.fill();
+    });
+
+    YACHTS.forEach((yd,i)=>{
+      const x=yd.rx*W, bob=Math.sin(t*yd.bob+yd.bp)*2.7, y=hY+bob;
+      const tilt=Math.sin(t*yd.bob*.65+yd.bp+1.2)*yd.tilt;
+      const atmo=yd.sc<0.44?0.86:1.0;
+      const sternX=x+yd.sternOff*yd.sc;
+      for(let f=0;f<8;f++){
+        const fx=sternX-f*15, fy=y+Math.sin(t*3.3+f*.88+i*.9)*1.5;
+        const fa=(1-f/8)*0.13*atmo, fr=(1-f/8)*3.0*yd.sc;
+        ctx.beginPath(); ctx.arc(fx,fy,fr,0,Math.PI*2);
+        ctx.fillStyle=`rgba(188,216,238,${fa})`; ctx.fill();
+      }
+      ctx.save(); ctx.translate(x,y); ctx.rotate(tilt);
+      ctx.save(); ctx.scale(yd.sc,-yd.sc*0.36);
+      ctx.globalAlpha=(0.10+Math.sin(t*1.55+i*2.1)*.026)*atmo;
+      yd.fn(ctx); ctx.restore(); ctx.restore();
+      ctx.save(); ctx.translate(x,y); ctx.rotate(tilt); ctx.scale(yd.sc,yd.sc);
+      ctx.globalAlpha=atmo; yd.fn(ctx); ctx.globalAlpha=1; ctx.restore();
+    });
+
+    const vig=ctx.createRadialGradient(W*.5,H*.5,H*.10,W*.5,H*.5,H*.90);
+    vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.60)');
+    ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+
+    if(!reduced) requestAnimationFrame(render);
+  }
+  render();
+})();
+
+/* ── 系统提示词 ── */
+const SYSTEM = `你是HOU，专为年轻人赚钱、副业和方向决策打造的AI引擎。
+
+身份：当被问到"你是什么AI""你是哪个模型"时，回答：我是HOU，专注于帮年轻人找到赚钱方向、做出正确决策的AI引擎，基于DeepSeek V4 Pro构建。
+
+核心能力：
+- 副业诊断：根据用户现实情况，找到最适合的赚钱路径
+- 钱和方向：帮用户搞清楚下一步该怎么走、怎么赚
+- 决策破局：把复杂问题拆成清晰选项和代价
+- 执行落地：把模糊想法变成今天就能动手的第一步
+
+风格铁律：
+- 直接给结论，不废话，不绕弯子
+- 用具体数字说话，不用模糊的"可能""大约"
+- 每个回答必须有一个今天就能执行的动作
+- 像一个已经赚到钱、愿意说真话的朋友，不像教科书
+- 不许说"这取决于很多因素"——用户问什么，直接给答案`;
+
+/* ── 历史对话管理 ── */
+const STORAGE_KEY = 'hou_sessions';
+let currentSessionId = null;
+let msgs = [];
+
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveSessions(sessions) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+}
+
+function saveCurrentSession() {
+  if (msgs.length === 0) return;
+  const sessions = getSessions();
+  const title = msgs.find(m => m.role === 'user')?.content?.slice(0, 24) || '新对话';
+  if (!currentSessionId) currentSessionId = Date.now().toString();
+  const idx = sessions.findIndex(s => s.id === currentSessionId);
+  const session = { id: currentSessionId, title, messages: msgs, updatedAt: Date.now() };
+  if (idx >= 0) sessions[idx] = session;
+  else sessions.unshift(session);
+  saveSessions(sessions);
+  renderHistory();
+}
+
+function deleteSession(id, e) {
+  e.stopPropagation();
+  const sessions = getSessions().filter(s => s.id !== id);
+  saveSessions(sessions);
+  if (currentSessionId === id) {
+    currentSessionId = null;
+    msgs = [];
+    showEmpty();
+  }
+  renderHistory();
+}
+
+function loadSession(id) {
+  const session = getSessions().find(s => s.id === id);
+  if (!session) return;
+  currentSessionId = id;
+  msgs = [...session.messages];
+  const m = document.getElementById('messages');
+  m.innerHTML = '';
+  msgs.forEach(msg => {
+    if (msg.role === 'system') return;
+    const div = document.createElement('div');
+    div.className = `msg ${msg.role === 'user' ? 'user' : 'bot'}`;
+    div.innerHTML = fmt(msg.content);
+    m.appendChild(div);
+  });
+  scrollBot();
+  renderHistory();
+  if (window.innerWidth <= 680) closeSidebar();
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString('zh', { hour: '2-digit', minute: '2-digit' });
+  }
+  const diff = now - d;
+  if (diff < 86400000 * 2) return '昨天';
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function esc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderHistory() {
+  const sessions = getSessions();
+  const list = document.getElementById('historyList');
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="history-empty">还没有历史对话<br>开始你的第一次对话</div>';
+    return;
+  }
+  list.innerHTML = sessions.map(s => `
+    <div class="history-item ${s.id === currentSessionId ? 'active' : ''}" onclick="loadSession('${s.id}')">
+      <div class="hi-title">${esc(s.title)}</div>
+      <div class="hi-time">${formatTime(s.updatedAt)}</div>
+      <button class="hi-del" onclick="deleteSession('${s.id}', event)" title="删除">×</button>
+    </div>
+  `).join('');
+}
+
+/* ── 侧边栏控制 ── */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+
+/* ── 聊天 ── */
+const TAGS = [
+  { label: '副业诊断', cls: 'diagnose-tag', action: "openDiagnose()" },
+  { label: '帮我找赚钱方向', cls: '', action: "quickSend('我想找一个适合自己的赚钱方向，根据我的情况帮我分析')" },
+  { label: '生意遇到瓶颈', cls: '', action: "quickSend('我的生意遇到了瓶颈，帮我找突破口')" },
+  { label: '帮我做一个决策', cls: '', action: "quickSend('我面临一个重要决策，帮我分析利弊和建议')" },
+];
+
+function showEmpty() {
+  const m = document.getElementById('messages');
+  m.innerHTML = '';
+  const h = document.createElement('div');
+  h.className = 'empty-hint'; h.id = 'emptyHint';
+  h.innerHTML = `<div class="empty-big">HOU</div><div class="empty-small">钱·副业·方向，说出来</div><div class="empty-tags">${TAGS.map(t=>`<div class="tag ${t.cls}" onclick="${t.action}">${t.label}</div>`).join('')}</div>`;
+  m.appendChild(h);
+}
+
+function quickSend(text) {
+  document.getElementById('userInput').value = text;
+  sendMsg();
+}
+
+function newChat() {
+  saveCurrentSession();
+  currentSessionId = null;
+  msgs = [];
+  showEmpty();
+  if (window.innerWidth <= 680) closeSidebar();
+}
+
+function addMsg(role, text) {
+  const hint = document.getElementById('emptyHint');
+  if (hint) hint.remove();
+  const div = document.createElement('div');
+  div.className = `msg ${role === 'user' ? 'user' : 'bot'}`;
+  div.innerHTML = role !== 'user' ? '' : fmt(text);
+  document.getElementById('messages').appendChild(div);
+  scrollBot();
+  return div;
+}
+
+function fmt(t) {
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+
+function scrollBot() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
+function handleKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight,160)+'px'; }
+
+async function sendMsg() {
+  const inp = document.getElementById('userInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+
+  addMsg('user', text);
+  msgs.push({ role:'user', content:text });
+
+  const loader = document.createElement('div');
+  loader.className = 'typing';
+  loader.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  document.getElementById('messages').appendChild(loader);
+  scrollBot();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ messages:[{role:'system',content:SYSTEM},...msgs] })
+    });
+    loader.remove();
+    if (!res.ok) { addMsg('bot','连接出错，请稍后重试。'); return; }
+
+    const botDiv = addMsg('bot','');
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '', buf = '';
+
+    while (true) {
+      const {done,value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        if (data === '[DONE]') break;
+        try {
+          const j = JSON.parse(data);
+          const delta = j.choices?.[0]?.delta;
+          if (delta?.reasoning_content) continue;
+          if (delta?.content) {
+            full += delta.content;
+            botDiv.innerHTML = fmt(full);
+            scrollBot();
+          }
+        } catch {}
+      }
+    }
+    msgs.push({ role:'assistant', content:full });
+    saveCurrentSession();
+  } catch {
+    loader.remove();
+    addMsg('bot','网络错误，请检查连接后重试。');
+  }
+}
+
+/* ── 副业诊断器 ── */
+const DIAGNOSE_QUESTIONS = [
+  {
+    q: '你现在的身份是？',
+    opts: ['在校学生', '上班族 / 打工人', '自由职业 / 兼职状态', '已经在创业']
+  },
+  {
+    q: '每周能抽出多少时间做副业？',
+    opts: ['5小时以内（碎片时间）', '5–15小时（每天1-2小时）', '15–30小时（相当于兼职）', '30小时以上，全力投入']
+  },
+  {
+    q: '启动资金大概多少？',
+    opts: ['几乎为零（纯时间换钱）', '500元以内', '500–3000元', '3000元以上，不是问题']
+  },
+  {
+    q: '你最拿得出手的能力是哪个方向？',
+    opts: ['文字 / 内容 / 表达', '设计 / 绘画 / 视频剪辑', '销售 / 运营 / 推广拉新', '技术 / 编程 / AI工具', '教学 / 服务 / 咨询', '还没想清楚']
+  },
+  {
+    q: '你最想要的结果是？',
+    opts: ['快速有收入（1个月内见到钱）', '慢慢建资产（可持续，不急）', '先验证方向，赚到了再加码']
+  }
+];
+
+let dStep = 0;
+let dAnswers = [];
+
+function openDiagnose() {
+  dStep = 0;
+  dAnswers = new Array(DIAGNOSE_QUESTIONS.length).fill(null);
+  document.getElementById('diagnoseModal').classList.add('show');
+  renderDiagnoseStep();
+}
+
+function closeDiagnose() {
+  document.getElementById('diagnoseModal').classList.remove('show');
+}
+
+function renderDiagnoseStep() {
+  const total = DIAGNOSE_QUESTIONS.length;
+  const q = DIAGNOSE_QUESTIONS[dStep];
+
+  // 进度条
+  document.getElementById('dStepBar').innerHTML = DIAGNOSE_QUESTIONS.map((_, i) =>
+    `<div class="d-step-dot ${i < dStep ? 'done' : i === dStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  // 问题
+  document.getElementById('dQuestion').textContent = q.q;
+
+  // 选项
+  document.getElementById('dOptions').innerHTML = q.opts.map((o, i) =>
+    `<button class="d-option ${dAnswers[dStep] === i ? 'selected' : ''}" onclick="selectDOption(${i})">${o}</button>`
+  ).join('');
+
+  // 导航
+  const backBtn = document.getElementById('dBack');
+  const nextBtn = document.getElementById('dNext');
+  backBtn.style.visibility = dStep === 0 ? 'hidden' : 'visible';
+  nextBtn.textContent = dStep === total - 1 ? '开始诊断 →' : '继续 →';
+  nextBtn.disabled = dAnswers[dStep] === null;
+}
+
+function selectDOption(idx) {
+  dAnswers[dStep] = idx;
+  renderDiagnoseStep();
+}
+
+function prevStep() {
+  if (dStep > 0) { dStep--; renderDiagnoseStep(); }
+}
+
+function nextStep() {
+  if (dAnswers[dStep] === null) return;
+  if (dStep < DIAGNOSE_QUESTIONS.length - 1) {
+    dStep++;
+    renderDiagnoseStep();
+  } else {
+    runDiagnose();
+  }
+}
+
+function runDiagnose() {
+  closeDiagnose();
+
+  const answers = DIAGNOSE_QUESTIONS.map((q, i) => `${q.q}${q.opts[dAnswers[i]]}`).join('\n');
+
+  const prompt = `请根据我的真实情况，给我一份专属副业诊断报告。
+
+我的情况：
+${answers}
+
+请输出：
+
+**最适合我的3条副业路径**
+每条路径包含：路径名称 / 月收入预期（给具体数字）/ 最大风险点 / 今天就能开始的第一步
+
+**本周行动清单**
+7件事，每件10分钟内能启动，按优先级排列。
+
+要求：不要泛泛建议，基于我的情况给出具体的、今天就能动手的答案。`;
+
+  const inp = document.getElementById('userInput');
+  inp.value = prompt;
+  sendMsg();
+}
+</script>
+</body>
+</html>
