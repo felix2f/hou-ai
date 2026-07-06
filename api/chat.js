@@ -1,11 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { messages, password } = req.body;
-
-  if (!password || password !== process.env.CODE) {
-    return res.status(401).json({ error: '密码错误' });
-  }
+  const { messages } = req.body;
 
   try {
     const upstream = await fetch('https://api.deepseek.com/chat/completions', {
