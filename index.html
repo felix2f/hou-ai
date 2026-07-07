@@ -808,65 +808,52 @@ function toggleFaq(btn) {
 }
 
 (function () {
-  // ── 第一步：先给所有元素打上 scroll-section，再做任何判断 ──
+  // 1. 打标
   document.querySelectorAll('section .sec-label, section .sec-title, section .sec-desc').forEach(el => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = '0ms';
+    el.classList.add('scroll-section'); el.dataset.d = '0';
   });
   document.querySelectorAll('.feature-card').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 100) + 'ms';
+    el.classList.add('scroll-section'); el.dataset.d = i * 100;
   });
   document.querySelectorAll('.bench-table tbody tr').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 80) + 'ms';
+    el.classList.add('scroll-section'); el.dataset.d = i * 80;
   });
   document.querySelectorAll('.step').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 100) + 'ms';
+    el.classList.add('scroll-section'); el.dataset.d = i * 100;
   });
   document.querySelectorAll('.p-card').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 100) + 'ms';
+    el.classList.add('scroll-section'); el.dataset.d = i * 100;
   });
   document.querySelectorAll('.faq-item').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 60) + 'ms';
+    el.classList.add('scroll-section'); el.dataset.d = i * 60;
   });
-  document.querySelectorAll('.cta-box').forEach(el => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = '0ms';
-  });
-  document.querySelectorAll('.footer-logo, .footer-links, .footer-copy').forEach((el, i) => {
-    el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 70) + 'ms';
+  document.querySelectorAll('.cta-box, .footer-logo, .footer-links, .footer-copy').forEach((el, i) => {
+    el.classList.add('scroll-section'); el.dataset.d = i * 60;
   });
 
-  // ── 第二步：减弱动效模式直接全部显示 ──
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.scroll-section').forEach(el => el.classList.add('visible'));
-    return;
-  }
-
-  // ── 第三步：页面加载时已在视口中的元素，同步直接显示，不播动画 ──
-  // （与 scroll-section 赋值在同一 JS 任务内，浏览器尚未渲染 opacity:0，
-  //   所以直接给 .visible 不会触发 transition，元素瞬间可见）
+  // 2. 加载时已在视口内的元素：同帧直接给 visible（浏览器未渲染过 opacity:0，不触发 transition）
   document.querySelectorAll('.scroll-section').forEach(el => {
     const r = el.getBoundingClientRect();
-    if (r.top < window.innerHeight && r.bottom > 0) {
-      el.classList.add('visible');
-    }
+    if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('visible');
   });
 
-  // ── 第四步：Observer 监听滚动中的进出，才播动画 ──
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const el = entry.target;
-      if (entry.isIntersecting) {
-        // 进入视口：rAF 保证浏览器先渲染 opacity:0，再触发进入动画
-        el.style.transitionDelay = el.dataset.enterDelay || '0ms';
-        requestAnimationFrame(() => el.classList.add('visible'));
-      } else {
-        // 离开视口：各自独立退出
+  // 3. 滚动动画：纯 scroll 事件，最兼容
+  function check() {
+    const vh = window.innerHeight;
+    document.querySelectorAll('.scroll-section').forEach(el => {
+      const r = el.getBoundingClientRect();
+      const entering = r.top < vh - 40 && r.bottom > 40;
+      if (entering && !el.classList.contains('visible')) {
+        el.style.transitionDelay = (el.dataset.d || 0) + 'ms';
+        el.classList.add('visible');
+      } else if (!entering && el.classList.contains('visible')) {
         el.style.transitionDelay = '0ms';
         el.classList.remove('visible');
       }
     });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  }
 
-  document.querySelectorAll('.scroll-section').forEach(el => observer.observe(el));
+  window.addEventListener('scroll', check, { passive: true });
 })();
 </script>
 </body>
