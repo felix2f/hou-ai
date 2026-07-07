@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     'Prefer': 'return=minimal'
   };
 
+  // rate check — non-fatal
   try {
     const oneMinAgo = new Date(Date.now() - 60000).toISOString();
     const checkRes = await fetch(
@@ -41,21 +42,30 @@ export default async function handler(req, res) {
     if (Array.isArray(recent) && recent.length >= 1) {
       return res.status(429).json({ error: '发送太频繁，请1分钟后再试' });
     }
+  } catch (e) {
+    console.error('[rate-check]', e.message);
+  }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
+  // save code — non-fatal (verify-sms fallback handles missing rows gracefully)
+  try {
     await fetch(`${SUPABASE_URL}/rest/v1/sms_codes`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ phone, code, expires_at: expiresAt, used: false }),
     });
+  } catch (e) {
+    console.error('[supabase-save]', e.message);
+  }
 
+  // send SMS — critical
+  try {
     await sendAliyunSMS(phone, code);
-
     res.json({ ok: true });
   } catch (e) {
-    console.error('send-sms error:', e);
-    res.status(500).json({ error: '服务器错误，请重试' });
+    console.error('[fc-relay]', e.message);
+    res.status(500).json({ error: e.message });
   }
 }
