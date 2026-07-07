@@ -898,6 +898,7 @@ async function checkAuth() {
     if (!r.ok) { localStorage.removeItem('hou_token'); currentToken = null; showAuthModal(); return; }
     currentUser = await r.json();
     updateUserHeader();
+    loadRemoteHistory();
   } catch { showAuthModal(); }
 }
 
@@ -925,7 +926,8 @@ async function doAuthMain() {
     hideAuthModal();
     await refreshUserInfo();
     updateUserHeader();
-    renderHistory(); showEmpty();
+    showEmpty();
+    loadRemoteHistory();
   } catch { setAuthErr('网络错误，请重试'); btn.disabled = false; btn.textContent = '进入 HOU'; }
 }
 
@@ -982,6 +984,53 @@ const STORAGE_KEY = 'hou_sessions';
 let currentSessionId = null;
 let msgs = [];
 
+// 从服务端加载历史，登录后调用
+async function loadRemoteHistory() {
+  if (!currentToken) return;
+  try {
+    const r = await fetch('/api/conversations', {
+      headers: { 'Authorization': `Bearer ${currentToken}` }
+    });
+    if (!r.ok) return;
+    const remote = await r.json();
+    if (!Array.isArray(remote)) return;
+
+    if (remote.length > 0) {
+      // 服务端有数据 → 以服务端为准覆盖本地
+      const sessions = remote.map(c => ({
+        id: c.id,
+        title: c.title,
+        messages: c.messages,
+        updatedAt: new Date(c.updated_at).getTime()
+      }));
+      saveSessions(sessions);
+    } else {
+      // 服务端为空 → 把本地历史上传（首次迁移）
+      getSessions().forEach(s => syncSessionToServer(s));
+    }
+    renderHistory();
+  } catch {}
+}
+
+// 把单条 session 异步同步到服务端（fire-and-forget）
+function syncSessionToServer(session) {
+  if (!currentToken || !session) return;
+  fetch('/api/conversations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` },
+    body: JSON.stringify(session)
+  }).catch(() => {});
+}
+
+// 从服务端删除单条 session（fire-and-forget）
+function deleteSessionFromServer(id) {
+  if (!currentToken) return;
+  fetch(`/api/conversations?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${currentToken}` }
+  }).catch(() => {});
+}
+
 function getSessions() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }
@@ -1002,6 +1051,7 @@ function saveCurrentSession() {
   else sessions.unshift(session);
   saveSessions(sessions);
   renderHistory();
+  syncSessionToServer(session);
 }
 
 function deleteSession(id, e) {
@@ -1014,6 +1064,7 @@ function deleteSession(id, e) {
     showEmpty();
   }
   renderHistory();
+  deleteSessionFromServer(id);
 }
 
 function loadSession(id) {
