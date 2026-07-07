@@ -1,11 +1,14 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
+const FC_URL = 'https://sms-relay-iuebrugwep.cn-shanghai.fcapp.run';
+const FC_SECRET = 'hou_sms_relay_2026';
+
 async function sendAliyunSMS(phone, code) {
-  const resp = await fetch(process.env.SMS_RELAY_URL, {
+  const resp = await fetch(FC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, code, secret: process.env.SMS_FC_SECRET }),
+    body: JSON.stringify({ phone, code, secret: FC_SECRET }),
     signal: AbortSignal.timeout(12000),
   });
   const result = await resp.json();
