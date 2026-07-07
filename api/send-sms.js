@@ -38,7 +38,7 @@ async function sendAliyunSMS(phone, code) {
     .digest('base64');
 
   const url = `https://dysmsapi.aliyuncs.com/?${canonicalQuery}&Signature=${encodeAliyun(signature)}`;
-  const resp = await fetch(url);
+  const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
   const result = await resp.json();
 
   if (result.Code !== 'OK') {
