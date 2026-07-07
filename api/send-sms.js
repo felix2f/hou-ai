@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       { headers }
     );
     const recent = await checkRes.json();
-    if (Array.isArray(recent) && recent.length >= 2) {
+    if (Array.isArray(recent) && recent.length >= 1) {
       return res.status(429).json({ error: '发送太频繁，请1分钟后再试' });
     }
 
