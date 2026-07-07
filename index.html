@@ -268,6 +268,14 @@
       opacity: 0;
       transform: translateY(30px) translateZ(0);
       will-change: opacity, transform;
+      /* 退出动画：ease-in 较快 */
+      transition: opacity 0.35s ease-in, transform 0.35s ease-in;
+    }
+    .scroll-section.visible {
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+      /* 进入动画：ease-out 较慢 */
+      transition: opacity 0.55s ease-out, transform 0.55s ease-out;
     }
 
     /* ══════════════════════════════════════════
@@ -864,17 +872,13 @@ function toggleFaq(btn) {
     entries.forEach(entry => {
       const el = entry.target;
       if (entry.isIntersecting) {
-        // 进入视口：淡入 + 上移，保留错开延迟
-        el.style.transitionDelay  = el.dataset.enterDelay || '0ms';
-        el.style.transition       = 'opacity 0.55s ease-out, transform 0.55s ease-out';
-        el.style.opacity          = '1';
-        el.style.transform        = 'translateY(0) translateZ(0)';
+        // 进入：用 data-enterDelay 错开，然后加 .visible 触发 CSS 进入动画
+        el.style.transitionDelay = el.dataset.enterDelay || '0ms';
+        el.classList.add('visible');
       } else {
-        // 离开视口：立即各自独立退出，无延迟
-        el.style.transitionDelay  = '0ms';
-        el.style.transition       = 'opacity 0.35s ease-in, transform 0.35s ease-in';
-        el.style.opacity          = '0';
-        el.style.transform        = 'translateY(20px) translateZ(0)';
+        // 退出：延迟归零，各元素独立触发 CSS 退出动画
+        el.style.transitionDelay = '0ms';
+        el.classList.remove('visible');
       }
     });
   }, {
