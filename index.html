@@ -834,21 +834,32 @@ function toggleFaq(btn) {
     el.classList.add('scroll-section'); el.dataset.enterDelay = (i * 70) + 'ms';
   });
 
-  // ── 第二步：减弱动效模式直接全部显示，不跑动画 ──
+  // ── 第二步：减弱动效模式直接全部显示 ──
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll('.scroll-section').forEach(el => el.classList.add('visible'));
     return;
   }
 
-  // ── 第三步：Observer 监听，rAF 保证浏览器先渲染 opacity:0 再加 visible ──
+  // ── 第三步：页面加载时已在视口中的元素，同步直接显示，不播动画 ──
+  // （与 scroll-section 赋值在同一 JS 任务内，浏览器尚未渲染 opacity:0，
+  //   所以直接给 .visible 不会触发 transition，元素瞬间可见）
+  document.querySelectorAll('.scroll-section').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight && r.bottom > 0) {
+      el.classList.add('visible');
+    }
+  });
+
+  // ── 第四步：Observer 监听滚动中的进出，才播动画 ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const el = entry.target;
       if (entry.isIntersecting) {
+        // 进入视口：rAF 保证浏览器先渲染 opacity:0，再触发进入动画
         el.style.transitionDelay = el.dataset.enterDelay || '0ms';
-        // 用 rAF 确保浏览器已渲染初始隐藏状态，才触发进入动画
         requestAnimationFrame(() => el.classList.add('visible'));
       } else {
+        // 离开视口：各自独立退出
         el.style.transitionDelay = '0ms';
         el.classList.remove('visible');
       }
