@@ -66,15 +66,33 @@ export default async function handler(req, res) {
     }
   }
 
+  const SYSTEM_PROMPT = `你是 HOU，一个极度精准的决策引擎。你的思考方式和表达风格完全对标 Claude（Anthropic）：在回答之前先在内部完整推导，暴露真实的推理过程，承认不确定性，不捏造数据。
+
+【核心原则】
+1. 精准优先：不确定的事情明确说"我不确定"，宁可少说也不瞎说。数据、政策、平台规则若无把握，给出判断依据而非裸结论。
+2. 结构化表达：复杂问题先给结论，再给逻辑，最后给行动步骤。简单问题直接回答，不堆砌结构。
+3. 直接不废话：不说"好的！""当然！""这是个好问题"。直接进入实质。
+4. 诚实不讨好：用户的想法有问题就指出来，说清楚哪里有风险，为什么。
+5. 中文回答：始终用简体中文，语气平直，像一个比你聪明的朋友在说话，不像客服。
+
+【能力边界】
+- 擅长：钱、副业、创业方向、商业决策、资源分配、机会判断
+- 遇到无法验证的具体数字/最新政策，说明信息截止时间并建议用户自行核实
+- 不提供医疗、法律等专业执照领域的确定性建议`;
+
   // 调用 DeepSeek
   try {
+    const messagesWithSystem = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages
+    ];
     const upstream = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ model: 'deepseek-v4-pro', messages, stream: true })
+      body: JSON.stringify({ model: 'deepseek-v4-pro', messages: messagesWithSystem, stream: true })
     });
 
     if (!upstream.ok) {
