@@ -1,49 +1,15 @@
-import crypto from 'crypto';
-
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-function encodeAliyun(str) {
-  return encodeURIComponent(String(str))
-    .replace(/\+/g, '%20')
-    .replace(/\*/g, '%2A')
-    .replace(/%7E/g, '~');
-}
-
 async function sendAliyunSMS(phone, code) {
-  const params = {
-    Format: 'JSON',
-    Version: '2017-05-25',
-    AccessKeyId: process.env.ALIYUN_ACCESS_KEY_ID,
-    SignatureMethod: 'HMAC-SHA1',
-    Timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    SignatureVersion: '1.0',
-    SignatureNonce: crypto.randomUUID(),
-    Action: 'SendSms',
-    PhoneNumbers: phone,
-    SignName: '上海润茂达进出口贸易',
-    TemplateCode: process.env.ALIYUN_SMS_TEMPLATE_CODE,
-    TemplateParam: JSON.stringify({ code }),
-  };
-
-  const canonicalQuery = Object.keys(params)
-    .sort()
-    .map(k => `${encodeAliyun(k)}=${encodeAliyun(params[k])}`)
-    .join('&');
-
-  const stringToSign = `GET&${encodeAliyun('/')}&${encodeAliyun(canonicalQuery)}`;
-  const signature = crypto
-    .createHmac('sha1', process.env.ALIYUN_ACCESS_KEY_SECRET + '&')
-    .update(stringToSign)
-    .digest('base64');
-
-  const url = `https://dysmsapi.aliyuncs.com/?${canonicalQuery}&Signature=${encodeAliyun(signature)}`;
-  const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const resp = await fetch(process.env.SMS_RELAY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, code, secret: process.env.SMS_FC_SECRET }),
+    signal: AbortSignal.timeout(12000),
+  });
   const result = await resp.json();
-
-  if (result.Code !== 'OK') {
-    throw new Error(`短信发送失败: ${result.Message} (${result.Code})`);
-  }
+  if (!result.ok) throw new Error(result.error || '短信发送失败');
   return result;
 }
 
