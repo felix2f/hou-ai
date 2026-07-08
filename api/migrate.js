@@ -6,12 +6,8 @@ const SECRET = 'hou_migrate_2026_oneshot';
 export default async function handler(req, res) {
   if (req.query.secret !== SECRET) return res.status(403).end();
 
-  const h = {
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json',
-    Prefer: 'return=minimal',
-  };
+  // 从 URL 提取 project ref: https://<ref>.supabase.co
+  const ref = new URL(SUPABASE_URL).hostname.split('.')[0];
 
   const sqls = [
     `CREATE TABLE IF NOT EXISTS error_logs (
@@ -29,14 +25,20 @@ export default async function handler(req, res) {
 
   const results = [];
   for (const sql of sqls) {
+    const label = sql.trim().split('\n')[0].trim();
     try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
-        method: 'POST', headers: h,
-        body: JSON.stringify({ sql }),
+      const r = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: sql }),
       });
-      results.push({ sql: sql.split('\n')[0].trim(), status: r.status, body: await r.text() });
+      const body = await r.text();
+      results.push({ label, status: r.status, body });
     } catch (e) {
-      results.push({ sql: sql.split('\n')[0].trim(), error: e.message });
+      results.push({ label, error: e.message });
     }
   }
 
