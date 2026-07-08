@@ -611,16 +611,24 @@
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-box">
     <div class="auth-logo">HOU</div>
-    <div class="auth-title">内测版 · 免验证码登录</div>
+    <div class="auth-title">登录 / 注册</div>
     <div>
       <div class="auth-label">手机号</div>
       <div class="auth-row">
         <input type="tel" class="auth-input" id="authPhone" placeholder="请输入手机号" maxlength="11" oninput="onPhoneInput()" />
+        <button class="auth-send-btn" id="authSendBtn" onclick="sendCode()" disabled>发送验证码</button>
       </div>
+    </div>
+    <div class="auth-resend-row" id="authResendRow" style="display:none">
+      <button class="auth-resend-btn" id="authResendBtn" onclick="resendCode()" disabled>重新发送 (60s)</button>
+    </div>
+    <div class="auth-code-wrap" id="authCodeWrap" style="display:none">
+      <div class="auth-label">验证码</div>
+      <input type="number" class="auth-input" id="authCode" placeholder="6 位验证码" maxlength="6" oninput="onCodeInput()" />
     </div>
     <button class="auth-btn" id="authMainBtn" onclick="doAuthMain()" disabled>进入 HOU</button>
     <div class="auth-err" id="authErr"></div>
-    <div class="auth-note">未注册的手机号将自动注册<br>注册即同意服务条款与隐私政策</div>
+    <div class="auth-note">未注册手机号将自动注册<br>注册即同意服务条款与隐私政策</div>
   </div>
 </div>
 
@@ -977,28 +985,104 @@ function hideAuthModal() { document.getElementById('authOverlay').classList.remo
 
 function onPhoneInput() {
   const v = document.getElementById('authPhone').value.trim();
-  document.getElementById('authMainBtn').disabled = !/^1[3-9]\d{9}$/.test(v);
+  const valid = /^1[3-9]\d{9}$/.test(v);
+  document.getElementById('authSendBtn').disabled = !valid;
+  // 手机号变了，重置验证码区域
+  document.getElementById('authCodeWrap').style.display = 'none';
+  document.getElementById('authResendRow').style.display = 'none';
+  document.getElementById('authMainBtn').disabled = true;
+  setAuthErr('');
 }
 
-async function doAuthMain() {
+async function sendCode() {
   const phone = document.getElementById('authPhone').value.trim();
-  if (!/^1[3-9]\d{9}$/.test(phone)) { setAuthErr('请输入有效手机号'); return; }
-  const btn = document.getElementById('authMainBtn');
-  btn.disabled = true; btn.textContent = '登录中...'; setAuthErr('');
+  if (!/^1[3-9]\d{9}$/.test(phone)) return;
+  const btn = document.getElementById('authSendBtn');
+  btn.disabled = true; btn.textContent = '发送中…'; setAuthErr('');
   try {
-    const r = await fetch('/api/beta-login', {
+    const r = await fetch('/api/send-sms', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
     });
     const d = await r.json();
-    if (!d.ok) { setAuthErr(d.error || '登录失败'); btn.disabled = false; btn.textContent = '进入 HOU'; return; }
+    if (!d.ok) {
+      setAuthErr(d.error || '发送失败');
+      btn.disabled = false; btn.textContent = '发送验证码';
+      return;
+    }
+    document.getElementById('authCodeWrap').style.display = 'block';
+    document.getElementById('authResendRow').style.display = 'block';
+    document.getElementById('authCode').value = '';
+    document.getElementById('authCode').focus();
+    startResendTimer();
+  } catch {
+    setAuthErr('网络错误，请重试');
+    btn.disabled = false; btn.textContent = '发送验证码';
+  }
+}
+
+function startResendTimer() {
+  let sec = 60;
+  const resendBtn = document.getElementById('authResendBtn');
+  const sendBtn = document.getElementById('authSendBtn');
+  resendBtn.disabled = true;
+  sendBtn.disabled = true;
+  sendBtn.textContent = `${sec}s`;
+  if (smsTimer) clearInterval(smsTimer);
+  smsTimer = setInterval(() => {
+    sec--;
+    if (sec <= 0) {
+      clearInterval(smsTimer); smsTimer = null;
+      resendBtn.disabled = false; resendBtn.textContent = '重新发送';
+      sendBtn.disabled = false; sendBtn.textContent = '重新发送';
+    } else {
+      resendBtn.textContent = `重新发送 (${sec}s)`;
+      sendBtn.textContent = `${sec}s`;
+    }
+  }, 1000);
+}
+
+async function resendCode() {
+  document.getElementById('authCode').value = '';
+  document.getElementById('authMainBtn').disabled = true;
+  setAuthErr('');
+  await sendCode();
+}
+
+function onCodeInput() {
+  const v = document.getElementById('authCode').value.trim();
+  document.getElementById('authMainBtn').disabled = !/^\d{6}$/.test(v);
+}
+
+async function doAuthMain() {
+  const phone = document.getElementById('authPhone').value.trim();
+  const code = document.getElementById('authCode').value.trim();
+  if (!phone || !/^\d{6}$/.test(code)) return;
+  const btn = document.getElementById('authMainBtn');
+  btn.disabled = true; btn.textContent = '验证中…'; setAuthErr('');
+  try {
+    const r = await fetch('/api/verify-sms', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, code })
+    });
+    const d = await r.json();
+    if (!d.ok) {
+      setAuthErr(d.error || '验证码错误或已过期');
+      btn.disabled = false; btn.textContent = '进入 HOU';
+      return;
+    }
     currentToken = d.token; localStorage.setItem('hou_token', currentToken);
+    if (d.user) currentUser = { phone: d.user.phone, is_pro: d.user.is_pro, remaining: 10 };
     hideAuthModal();
+    if (smsTimer) { clearInterval(smsTimer); smsTimer = null; }
     await refreshUserInfo();
     updateUserHeader();
     showEmpty();
     loadRemoteHistory();
-  } catch { setAuthErr('网络错误，请重试'); btn.disabled = false; btn.textContent = '进入 HOU'; }
+  } catch {
+    setAuthErr('网络错误，请重试');
+    btn.disabled = false; btn.textContent = '进入 HOU';
+  }
 }
 
 function setAuthErr(msg) { document.getElementById('authErr').textContent = msg; }
