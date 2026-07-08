@@ -32,11 +32,21 @@ export default async function handler(req, res) {
   try {
     let profiles = await dbGet(`profiles?phone=eq.${encodeURIComponent(phone)}&select=*`);
     let profile;
-    if (!Array.isArray(profiles) || !profiles.length) {
+    const isNew = !Array.isArray(profiles) || !profiles.length;
+
+    if (!isNew) {
+      profile = profiles[0];
+      // 频率限制：同一用户 60 秒内最多 3 次
+      const oneMinAgo = new Date(Date.now() - 60000).toISOString();
+      const recent = await dbGet(
+        `sessions?user_id=eq.${profile.id}&created_at=gte.${encodeURIComponent(oneMinAgo)}&select=id`
+      );
+      if (Array.isArray(recent) && recent.length >= 3) {
+        return res.status(429).json({ error: '操作太频繁，请稍后再试' });
+      }
+    } else {
       const created = await dbPost('profiles', { phone });
       profile = Array.isArray(created) ? created[0] : created;
-    } else {
-      profile = profiles[0];
     }
 
     const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');

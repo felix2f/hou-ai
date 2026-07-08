@@ -618,7 +618,7 @@
     </div>
     <button class="auth-btn" id="authMainBtn" onclick="doAuthMain()" disabled style="margin-top:20px">进入 HOU</button>
     <div class="auth-err" id="authErr"></div>
-    <div class="auth-note">未注册手机号将自动注册<br>注册即同意服务条款与隐私政策</div>
+    <div class="auth-note">未注册手机号将自动注册<br>注册即同意<a href="/privacy.html" target="_blank" style="color:var(--primary);text-decoration:none">服务条款与隐私政策</a></div>
   </div>
 </div>
 
@@ -997,6 +997,7 @@ async function doAuthMain() {
     currentToken = d.token; localStorage.setItem('hou_token', currentToken);
     if (d.user) currentUser = { phone: d.user.phone, is_pro: d.user.is_pro, remaining: 10 };
     hideAuthModal();
+    track('login', { method: 'phone' });
     await refreshUserInfo();
     updateUserHeader();
     showEmpty();
@@ -1038,23 +1039,7 @@ function goPro() { alert('支付功能即将上线！'); }
 
 checkAuth();
 
-/* ── 系统提示词 ── */
-const SYSTEM = `你是HOU，专为年轻人赚钱、副业和方向决策打造的AI引擎。
-
-身份：当被问到"你是什么AI""你是哪个模型"时，回答：我是HOU，专注于帮年轻人找到赚钱方向、做出正确决策的AI引擎，基于DeepSeek V4 Pro构建。
-
-核心能力：
-- 副业诊断：根据用户现实情况，找到最适合的赚钱路径
-- 钱和方向：帮用户搞清楚下一步该怎么走、怎么赚
-- 决策破局：把复杂问题拆成清晰选项和代价
-- 执行落地：把模糊想法变成今天就能动手的第一步
-
-风格铁律：
-- 直接给结论，不废话，不绕弯子
-- 用具体数字说话，不用模糊的"可能""大约"
-- 每个回答必须有一个今天就能执行的动作
-- 像一个已经赚到钱、愿意说真话的朋友，不像教科书
-- 不许说"这取决于很多因素"——用户问什么，直接给答案`;
+/* SYSTEM prompt 已移至服务端 api/chat.js，前端不再持有 */
 
 /* ── 历史对话管理 ── */
 const STORAGE_KEY = 'hou_sessions';
@@ -1283,7 +1268,7 @@ async function sendMsg() {
         'Content-Type':'application/json',
         'Authorization': currentToken ? `Bearer ${currentToken}` : ''
       },
-      body: JSON.stringify({ messages:[{role:'system',content:SYSTEM},...msgs] })
+      body: JSON.stringify({ messages: msgs })
     });
     loader.remove();
     if (res.status === 401) { showAuthModal(); return; }
@@ -1322,6 +1307,7 @@ async function sendMsg() {
     }
     msgs.push({ role:'assistant', content:full });
     saveCurrentSession();
+    track('message_sent', { session_id: currentSessionId });
     await refreshUserInfo(); updateUserHeader();
   } catch {
     loader.remove();
@@ -1503,6 +1489,33 @@ function setLang(l) {
 
 // 初始化语言
 applyChatLang(window._chatLang);
+
+/* ── 错误监控（#11） ── */
+function logError(msg, source, line_no, col_no, stack) {
+  fetch('/api/log-error', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(currentToken ? { 'Authorization': `Bearer ${currentToken}` } : {})
+    },
+    body: JSON.stringify({ message: msg, source, line_no, col_no, stack, url: location.href })
+  }).catch(() => {});
+}
+window.onerror = (msg, src, line, col, err) => { logError(String(msg), src, line, col, err?.stack); return false; };
+window.onunhandledrejection = e => { logError(String(e.reason?.message || e.reason), '', 0, 0, e.reason?.stack); };
+
+/* ── 埋点（#12） ── */
+function track(name, props) {
+  fetch('/api/track', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(currentToken ? { 'Authorization': `Bearer ${currentToken}` } : {})
+    },
+    body: JSON.stringify({ name, props: props || {}, url: location.href })
+  }).catch(() => {});
+}
+track('page_view', { page: 'chat' });
 
 function runDiagnose() {
   closeDiagnose();

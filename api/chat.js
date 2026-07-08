@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const FREE_LIMIT = 10;
-const OPEN_BETA = true; // 内测期间免费，关闭时改为 false
+const OPEN_BETA = process.env.OPEN_BETA !== 'false'; // Vercel 设 OPEN_BETA=false 即开启限流
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
