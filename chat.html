@@ -509,22 +509,29 @@
     }
     .diagnose-tag:hover { background: rgba(255,69,0,0.18) !important; box-shadow: 0 0 14px rgba(255,69,0,0.2) !important; }
 
-    /* ── 设置按钮 & 下拉菜单 ── */
+    /* ── 侧边栏底部设置区 ── */
+    .sidebar-footer {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+      position: relative;
+    }
     #settingsWidget { display: none; }
     #settingsBtn {
-      position: fixed; top: 16px; left: 16px; z-index: 9999;
       background: none; border: none; cursor: pointer;
-      width: 44px; height: 44px;
-      display: flex; align-items: center; justify-content: center;
-      color: #64748b; border-radius: 6px; padding: 0;
-      transition: color 0.15s;
+      width: 100%; padding: 9px 10px;
+      display: flex; align-items: center; gap: 9px;
+      color: var(--text2); border-radius: 7px;
+      font-size: 13px; font-family: inherit;
+      transition: background 0.15s, color 0.15s;
     }
-    #settingsBtn:hover { color: #2563eb; }
+    #settingsBtn:hover { background: var(--surface2); color: var(--text); }
+    #settingsBtn svg { flex-shrink: 0; }
     #settingsMenu {
-      position: fixed; top: 64px; left: 16px; z-index: 9999;
+      position: absolute; bottom: calc(100% + 4px); left: 10px; z-index: 200;
       background: #fff; border: 1px solid #e2e8f0; border-radius: 4px;
       padding: 8px; min-width: 160px;
-      opacity: 0; transform: translateY(-4px);
+      opacity: 0; transform: translateY(4px);
       pointer-events: none;
       transition: opacity 0.15s ease, transform 0.15s ease;
     }
@@ -644,6 +651,29 @@
     <div class="history-list" id="historyList">
       <div class="history-empty">还没有历史对话<br>开始你的第一次对话</div>
     </div>
+    <div class="sidebar-footer">
+      <div id="settingsWidget" style="position:relative;">
+        <button id="settingsBtn" onclick="toggleSettings(event)" aria-label="设置">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="settingsBtnLabel">设置</span>
+        </button>
+        <div id="settingsMenu">
+          <div class="sm-lang-row">
+            <span class="sm-lang-label" id="smLangLabel">简体中文</span>
+            <div class="sm-lang-btns">
+              <button id="smBtnZh" onclick="setLang('zh')" class="active">中</button>
+              <span class="sm-sep">/</span>
+              <button id="smBtnEn" onclick="setLang('en')">EN</button>
+            </div>
+          </div>
+          <div class="sm-divider"></div>
+          <button class="sm-logout" id="smLogoutBtn" onclick="doLogout()">退出登录</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 主聊天区 -->
@@ -665,28 +695,6 @@
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
-  </div>
-</div>
-
-<!-- 设置按钮（登录后显示） -->
-<div id="settingsWidget">
-  <button id="settingsBtn" onclick="toggleSettings(event)" aria-label="设置">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-      <circle cx="12" cy="12" r="3"/>
-    </svg>
-  </button>
-  <div id="settingsMenu">
-    <div class="sm-lang-row">
-      <span class="sm-lang-label" id="smLangLabel">简体中文</span>
-      <div class="sm-lang-btns">
-        <button id="smBtnZh" onclick="setLang('zh')" class="active">中</button>
-        <span class="sm-sep">/</span>
-        <button id="smBtnEn" onclick="setLang('en')">EN</button>
-      </div>
-    </div>
-    <div class="sm-divider"></div>
-    <button class="sm-logout" id="smLogoutBtn" onclick="doLogout()">退出登录</button>
   </div>
 </div>
 
@@ -1434,6 +1442,7 @@ const I18N_CHAT = {
     historyEmpty: '还没有历史对话<br>开始你的第一次对话',
     langLabel: '简体中文',
     logout: '退出登录',
+    settingsLabel: '设置',
   },
   en: {
     placeholder: 'Stuck in business? Can\'t decide? Say it…',
@@ -1442,6 +1451,7 @@ const I18N_CHAT = {
     historyEmpty: 'No history yet<br>Start your first conversation',
     langLabel: 'English',
     logout: 'Log Out',
+    settingsLabel: 'Settings',
   }
 };
 
@@ -1460,6 +1470,8 @@ function applyChatLang(l) {
   if (btnEn) btnEn.classList.toggle('active', l === 'en');
   const logoutBtn = document.getElementById('smLogoutBtn');
   if (logoutBtn) logoutBtn.textContent = t.logout;
+  const settingsLbl = document.getElementById('settingsBtnLabel');
+  if (settingsLbl) settingsLbl.textContent = t.settingsLabel;
   // html lang 属性
   document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
   // 空状态界面
