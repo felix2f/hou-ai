@@ -263,6 +263,20 @@
       section     { padding: 40px 0; }
     }
 
+    /* ── 语言切换（首页/未登录） ── */
+    #pubLangSwitch {
+      position: fixed; top: 16px; left: 16px; z-index: 200;
+      display: flex; align-items: center;
+    }
+    #pubLangSwitch button {
+      background: none; border: none; cursor: pointer;
+      font-size: 12px; color: #94a3b8; padding: 3px 4px;
+      font-family: inherit; line-height: 1; transition: color 0.15s;
+    }
+    #pubLangSwitch button.active { font-weight: 700; text-decoration: underline; }
+    #pubLangSwitch button:hover { color: #cbd5e1; }
+    #pubLangSwitch .pub-sep { color: #64748b; font-size: 12px; line-height: 1; }
+
     /* ── Scroll animation ── */
     .scroll-section {
       opacity: 0;
@@ -406,6 +420,13 @@
   </style>
 </head>
 <body>
+
+<!-- 语言切换（首页/未登录） -->
+<div id="pubLangSwitch">
+  <button id="btnLangZh" onclick="setLang('zh')" class="active">中文</button>
+  <span class="pub-sep">/</span>
+  <button id="btnLangEn" onclick="setLang('en')">EN</button>
+</div>
 
 <!-- 石材底纹 -->
 <div class="stone-layer" aria-hidden="true">
@@ -800,6 +821,121 @@
 </footer>
 
 <script>
+/* ── 多语言（首页） ── */
+(function() {
+  const LANG_KEY = 'hou_lang';
+
+  const T = {
+    zh: {
+      n1:'功能', n2:'性能', n3:'使用方式', n4:'定价',
+      nb1:'登录', nb2:'免费开始',
+      hbadge:'<span class="badge-dot"></span>基于 DeepSeek V4 Pro · 中文决策场景调优',
+      htitle:'HOU你的赛博资本家分身',
+      hhook:'不知道下一步怎么赚钱',
+      hsub:'HOU 是专为年轻人打造的 AI 决策顾问。<br>副业诊断、方向选择、生意瓶颈——说出来，直接给答案。',
+      hstart:'免费开始使用', hprice:'查看定价',
+      hnote:'每天 10 次对话免费 · 无需信用卡 · 随时取消',
+      flabel:'核心功能', ftitle:'三个高频场景，直接给答案',
+      fdesc:'不是通用 AI。专为副业、决策、生意场景调优，每条回答必须有今天可执行的第一步。',
+      blabel:'性能数据', btitle:'为什么选 DeepSeek V4 Pro',
+      bdesc:'HOU 选用了在中文理解和数学推理上领先的模型，而非最贵的。以下为公开基准测评数据。',
+      wlabel:'使用方式', wtitle:'三步拿到答案',
+      wdesc:'不需要调教模型，说你的情况，HOU 给你路径。',
+      plabel:'定价', ptitle:'简单透明，按需选择',
+      pdesc:'免费版够用来试，Pro 版够用来认真赚钱。',
+      fqlabel:'常见问题', fqtitle:'还有疑问？',
+      fqdesc:'没找到答案就直接在聊天里问 HOU。',
+      ctitle:'现在就开始', csub:'免费使用，10 次对话感受差距。',
+      cstart:'免费开始使用 →',
+      cnote:'每天 10 次免费 · 无需信用卡 · 随时取消订阅',
+    },
+    en: {
+      n1:'Features', n2:'Performance', n3:'How It Works', n4:'Pricing',
+      nb1:'Log In', nb2:'Get Started',
+      hbadge:'<span class="badge-dot"></span>Powered by DeepSeek V4 Pro · Decision-Tuned',
+      htitle:'HOU Your AI Decision Engine',
+      hhook:"Not sure how to make your next money move?",
+      hsub:'HOU is an AI advisor built for young people.<br>Side hustles, pivots, business breakthroughs — say it, get real answers.',
+      hstart:'Start for Free', hprice:'View Pricing',
+      hnote:'10 free chats/day · No credit card · Cancel anytime',
+      flabel:'FEATURES', ftitle:'Three use cases. Direct answers.',
+      fdesc:'Not a general AI. Tuned for side hustles, decisions, and business — every response must include an action you can take today.',
+      blabel:'PERFORMANCE', btitle:'Why DeepSeek V4 Pro',
+      bdesc:'HOU uses the model that leads in Chinese comprehension and math reasoning — not the most expensive. Public benchmark data below.',
+      wlabel:'HOW IT WORKS', wtitle:'Three steps to your answer',
+      wdesc:'No prompt engineering needed. Describe your situation, HOU gives you a path.',
+      plabel:'PRICING', ptitle:'Simple and transparent',
+      pdesc:'Free tier to try it out. Pro for when you\'re serious about making money.',
+      fqlabel:'FAQ', fqtitle:'Still have questions?',
+      fqdesc:"Can't find the answer? Ask HOU directly in the chat.",
+      ctitle:'Start now', csub:'Free to use. 10 chats to feel the difference.',
+      cstart:'Start for Free →',
+      cnote:'10 free chats/day · No credit card · Cancel anytime',
+    }
+  };
+
+  // [CSS选择器, 翻译key, 是否innerHTML]
+  const MAP = [
+    ['.nav-links li:nth-child(1) a', 'n1'],
+    ['.nav-links li:nth-child(2) a', 'n2'],
+    ['.nav-links li:nth-child(3) a', 'n3'],
+    ['.nav-links li:nth-child(4) a', 'n4'],
+    ['.nav-right .btn-secondary', 'nb1'],
+    ['.nav-right .btn-primary', 'nb2'],
+    ['.hero-badge', 'hbadge'],
+    ['.hero-title', 'htitle'],
+    ['.hero-hook', 'hhook'],
+    ['.hero-sub', 'hsub'],
+    ['.hero-actions .btn-primary', 'hstart'],
+    ['.hero-actions .btn-secondary', 'hprice'],
+    ['.hero-note', 'hnote'],
+    ['#features .sec-label', 'flabel'],
+    ['#features .sec-title', 'ftitle'],
+    ['#features .sec-desc', 'fdesc'],
+    ['#benchmark .sec-label', 'blabel'],
+    ['#benchmark .sec-title', 'btitle'],
+    ['#benchmark .sec-desc', 'bdesc'],
+    ['#how .sec-label', 'wlabel'],
+    ['#how .sec-title', 'wtitle'],
+    ['#how .sec-desc', 'wdesc'],
+    ['#pricing .sec-label', 'plabel'],
+    ['#pricing .sec-title', 'ptitle'],
+    ['#pricing .sec-desc', 'pdesc'],
+    ['#faq .sec-label', 'fqlabel'],
+    ['#faq .sec-title', 'fqtitle'],
+    ['#faq .sec-desc', 'fqdesc'],
+    ['.cta-title', 'ctitle'],
+    ['.cta-sub', 'csub'],
+    ['.cta-box .btn-primary', 'cstart'],
+    ['.cta-note', 'cnote'],
+  ];
+
+  function applyLang(l) {
+    const t = T[l] || T.zh;
+    MAP.forEach(function([sel, key]) {
+      const el = document.querySelector(sel);
+      if (el && t[key] != null) el.innerHTML = t[key];
+    });
+    document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+    const btnZh = document.getElementById('btnLangZh');
+    const btnEn = document.getElementById('btnLangEn');
+    if (btnZh) btnZh.classList.toggle('active', l === 'zh');
+    if (btnEn) btnEn.classList.toggle('active', l === 'en');
+  }
+
+  window.setLang = function(l) {
+    localStorage.setItem(LANG_KEY, l);
+    applyLang(l);
+    window.dispatchEvent(new CustomEvent('hou-lang', { detail: l }));
+  };
+
+  // 初始化，与 chat 页面语言状态同步
+  applyLang(localStorage.getItem(LANG_KEY) || 'zh');
+
+  // 监听其他页面的语言变更（同tab内跨页面不适用，但保留扩展性）
+  window.addEventListener('hou-lang', function(e) { applyLang(e.detail); });
+})();
+
 function toggleFaq(btn) {
   const item = btn.closest('.faq-item');
   const wasOpen = item.classList.contains('open');

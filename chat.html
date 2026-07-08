@@ -509,6 +509,47 @@
     }
     .diagnose-tag:hover { background: rgba(255,69,0,0.18) !important; box-shadow: 0 0 14px rgba(255,69,0,0.2) !important; }
 
+    /* ── 设置按钮 & 下拉菜单 ── */
+    #settingsWidget { display: none; }
+    #settingsBtn {
+      position: fixed; top: 16px; left: 16px; z-index: 9999;
+      background: none; border: none; cursor: pointer;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      color: #64748b; border-radius: 6px; padding: 0;
+      transition: color 0.15s;
+    }
+    #settingsBtn:hover { color: #2563eb; }
+    #settingsMenu {
+      position: fixed; top: 64px; left: 16px; z-index: 9999;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 4px;
+      padding: 8px; min-width: 160px;
+      opacity: 0; transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    #settingsMenu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .sm-lang-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 8px; margin-bottom: 4px;
+    }
+    .sm-lang-label { font-size: 14px; color: #334155; white-space: nowrap; }
+    .sm-lang-btns { display: flex; align-items: center; gap: 2px; }
+    .sm-lang-btns button {
+      background: none; border: none; cursor: pointer; font-family: inherit;
+      font-size: 12px; color: #94a3b8; padding: 2px 5px; border-radius: 3px;
+      transition: color 0.1s;
+    }
+    .sm-lang-btns button.active { color: #334155; font-weight: 600; text-decoration: underline; }
+    .sm-lang-btns .sm-sep { color: #cbd5e1; font-size: 12px; pointer-events: none; }
+    .sm-divider { height: 1px; background: #e2e8f0; margin: 0 8px 4px; }
+    .sm-logout {
+      width: 100%; background: none; border: none; cursor: pointer;
+      padding: 6px 8px; text-align: left; font-size: 14px; color: #dc2626;
+      border-radius: 3px; font-family: inherit; transition: color 0.1s; display: block;
+    }
+    .sm-logout:hover { color: #b91c1c; }
+
     /* 移动端适配 */
     @media (max-width: 680px) {
       .sidebar {
@@ -624,6 +665,28 @@
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- 设置按钮（登录后显示） -->
+<div id="settingsWidget">
+  <button id="settingsBtn" onclick="toggleSettings(event)" aria-label="设置">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  </button>
+  <div id="settingsMenu">
+    <div class="sm-lang-row">
+      <span class="sm-lang-label" id="smLangLabel">简体中文</span>
+      <div class="sm-lang-btns">
+        <button id="smBtnZh" onclick="setLang('zh')" class="active">中</button>
+        <span class="sm-sep">/</span>
+        <button id="smBtnEn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+    <div class="sm-divider"></div>
+    <button class="sm-logout" id="smLogoutBtn" onclick="doLogout()">退出登录</button>
   </div>
 </div>
 
@@ -953,6 +1016,9 @@ function updateUserHeader() {
     <span class="h-badge ${isPro?'pro':'free'}">${isPro?'PRO':`${rem??0}次`}</span>
     ${!isPro?`<button class="h-upgrade" onclick="showUpgrade()">升级 Pro</button>`:''}
   `;
+  const sw = document.getElementById('settingsWidget');
+  if (sw) sw.style.display = 'block';
+  if (typeof applyChatLang === 'function') applyChatLang(window._chatLang || localStorage.getItem('hou_lang') || 'zh');
 }
 
 function showUpgrade() { document.getElementById('upgradeOverlay').classList.add('show'); }
@@ -1143,7 +1209,10 @@ function showEmpty() {
   m.innerHTML = '';
   const h = document.createElement('div');
   h.className = 'empty-hint'; h.id = 'emptyHint';
-  h.innerHTML = `<div class="empty-big">HOU</div><div class="empty-small">钱·副业·方向，说出来</div><div class="empty-tags">${TAGS.map(t=>`<div class="tag ${t.cls}" onclick="${t.action}">${t.label}</div>`).join('')}</div>`;
+  const _it = (typeof I18N_CHAT !== 'undefined') ? (I18N_CHAT[window._chatLang || 'zh'] || I18N_CHAT.zh) : null;
+  const _small = _it ? _it.emptySmall : '钱·副业·方向，说出来';
+  const _tLabels = _it ? _it.tags : TAGS.map(x => x.label);
+  h.innerHTML = `<div class="empty-big">HOU</div><div class="empty-small">${_small}</div><div class="empty-tags">${TAGS.map((tg,i)=>`<div class="tag ${tg.cls}" onclick="${tg.action}">${_tLabels[i]||tg.label}</div>`).join('')}</div>`;
   m.appendChild(h);
 }
 
@@ -1330,6 +1399,95 @@ function nextStep() {
     runDiagnose();
   }
 }
+
+/* ── 设置菜单 ── */
+let _settingsOpen = false;
+
+function toggleSettings(e) {
+  e.stopPropagation();
+  _settingsOpen = !_settingsOpen;
+  document.getElementById('settingsMenu').classList.toggle('open', _settingsOpen);
+}
+
+document.addEventListener('click', function(e) {
+  if (!_settingsOpen) return;
+  const widget = document.getElementById('settingsWidget');
+  if (widget && !widget.contains(e.target)) {
+    _settingsOpen = false;
+    document.getElementById('settingsMenu').classList.remove('open');
+  }
+});
+
+function doLogout() {
+  localStorage.clear();
+  window.location.href = '/';
+}
+
+/* ── 多语言（聊天页） ── */
+window._chatLang = localStorage.getItem('hou_lang') || 'zh';
+
+const I18N_CHAT = {
+  zh: {
+    placeholder: '生意遇到瓶颈？决策拿不定？说出来…',
+    emptySmall: '钱·副业·方向，说出来',
+    tags: ['副业诊断', '帮我找赚钱方向', '生意遇到瓶颈', '帮我做一个决策'],
+    historyEmpty: '还没有历史对话<br>开始你的第一次对话',
+    langLabel: '简体中文',
+    logout: '退出登录',
+  },
+  en: {
+    placeholder: 'Stuck in business? Can\'t decide? Say it…',
+    emptySmall: 'Money · Side Hustles · Direction',
+    tags: ['Side Hustle Scan', 'Find my money move', 'Business breakthrough', 'Help me decide'],
+    historyEmpty: 'No history yet<br>Start your first conversation',
+    langLabel: 'English',
+    logout: 'Log Out',
+  }
+};
+
+function applyChatLang(l) {
+  window._chatLang = l;
+  const t = I18N_CHAT[l] || I18N_CHAT.zh;
+  // placeholder
+  const inp = document.getElementById('userInput');
+  if (inp) inp.placeholder = t.placeholder;
+  // 设置菜单标签
+  const lbl = document.getElementById('smLangLabel');
+  if (lbl) lbl.textContent = t.langLabel;
+  const btnZh = document.getElementById('smBtnZh');
+  const btnEn = document.getElementById('smBtnEn');
+  if (btnZh) btnZh.classList.toggle('active', l === 'zh');
+  if (btnEn) btnEn.classList.toggle('active', l === 'en');
+  const logoutBtn = document.getElementById('smLogoutBtn');
+  if (logoutBtn) logoutBtn.textContent = t.logout;
+  // html lang 属性
+  document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+  // 空状态界面
+  const emptyHint = document.getElementById('emptyHint');
+  if (emptyHint) {
+    const sm = emptyHint.querySelector('.empty-small');
+    if (sm) sm.textContent = t.emptySmall;
+    const tagsEl = emptyHint.querySelector('.empty-tags');
+    if (tagsEl) {
+      tagsEl.innerHTML = TAGS.map((tg, i) =>
+        `<div class="tag ${tg.cls}" onclick="${tg.action}">${t.tags[i] || tg.label}</div>`
+      ).join('');
+    }
+  }
+  // 历史为空提示
+  const histEl = document.querySelector('.history-empty');
+  if (histEl) histEl.innerHTML = t.historyEmpty;
+}
+
+function setLang(l) {
+  window._chatLang = l;
+  localStorage.setItem('hou_lang', l);
+  applyChatLang(l);
+  window.dispatchEvent(new CustomEvent('hou-lang', { detail: l }));
+}
+
+// 初始化语言
+applyChatLang(window._chatLang);
 
 function runDiagnose() {
   closeDiagnose();
