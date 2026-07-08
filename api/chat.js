@@ -91,20 +91,27 @@ export default async function handler(req, res) {
 
 
 
-  // 调用 DeepSeek
+  // 调用 DeepSeek，主模型失败自动降级备用模型
+  const MODELS = ['deepseek-v4-pro', 'deepseek-chat'];
   try {
     const messagesWithSystem = [
       { role: 'system', content: SYSTEM_PROMPT },
       ...messages.filter(m => m.role !== 'system'),
     ];
-    const upstream = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ model: 'deepseek-v4-pro', messages: messagesWithSystem, stream: true })
-    });
+
+    let upstream;
+    for (const model of MODELS) {
+      upstream = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model, messages: messagesWithSystem, stream: true })
+      });
+      if (upstream.ok) break;
+      console.warn(`[chat] model ${model} failed ${upstream.status}, trying fallback`);
+    }
 
     if (!upstream.ok) {
       const err = await upstream.text();

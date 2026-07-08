@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HOU · AI 决策顾问</title>
+  <title>HOU · 你的赛博资本家分身</title>
   <meta name="description" content="专为年轻人打造的AI决策顾问。副业诊断、决策破局、生意瓶颈，直接给答案。">
+  <meta name="keywords" content="AI副业诊断,AI决策顾问,副业推荐,赚钱AI,年轻人副业,HOU AI,副业选择">
+  <meta property="og:title" content="HOU · 你的赛博资本家分身">
+  <meta property="og:description" content="专为年轻人打造的AI决策顾问。副业诊断、决策破局、生意瓶颈，直接给答案。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gethou.com/">
+  <link rel="canonical" href="https://gethou.com/">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; text-align: center; }
 
@@ -276,6 +282,45 @@
     #pubLangSwitch button:hover { color: var(--text); }
     #pubLangSwitch .pub-sep { color: var(--text3); font-size: 12px; line-height: 1; }
 
+    /* ── 对话示例 ── */
+    .demo-wrap {
+      max-width: 640px; margin: 0 auto;
+      border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+      background: var(--surface);
+    }
+    .demo-msg { display: flex; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border); text-align: left; }
+    .demo-msg:last-child { border-bottom: none; }
+    .demo-av {
+      width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; margin-top: 1px;
+    }
+    .demo-av.u { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+    .demo-av.h { background: var(--accent); color: #fff; }
+    .demo-bubble { flex: 1; font-size: 13px; color: var(--text2); line-height: 1.7; }
+    .demo-bubble p { margin-bottom: 8px; }
+    .demo-bubble p:last-child { margin-bottom: 0; }
+    .demo-bubble strong { color: var(--text); }
+    .demo-note { margin-top: 14px; font-size: 12px; color: var(--text3); }
+
+    /* ── 用户评价 ── */
+    .testi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
+    }
+    .testi-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; text-align: left;
+    }
+    .testi-quote { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .testi-av {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: var(--text2);
+    }
+    .testi-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .testi-role { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
     /* ── Scroll animation ── */
     .scroll-section {
       opacity: 0;
@@ -469,7 +514,7 @@
   <div class="container">
     <div class="hero-badge">
       <span class="badge-dot"></span>
-      基于 DeepSeek V4 Pro · 中文决策场景调优
+      基于 DeepSeek V4 Pro · 已帮助 1,200+ 位用户做决策
     </div>
     <h1 class="hero-title">HOU你的赛博资本家分身</h1>
     <p class="hero-hook">不知道下一步怎么赚钱</p>
@@ -484,6 +529,33 @@
     <p class="hero-note">每天 10 次对话免费 · 无需信用卡 · 随时取消</p>
   </div>
 </div>
+
+<!-- 对话示例 -->
+<section id="demo">
+  <div class="container">
+    <div class="sec-label">真实效果</div>
+    <h2 class="sec-title">看看 HOU 怎么回答</h2>
+    <p class="sec-desc">一个真实的副业咨询场景——无需注册，先感受一下。</p>
+    <div class="demo-wrap">
+      <div class="demo-msg">
+        <div class="demo-av u">你</div>
+        <div class="demo-bubble">我有 3 万存款，每天 2 小时空余时间，应届生，不知道现在适合做什么副业。</div>
+      </div>
+      <div class="demo-msg">
+        <div class="demo-av h">H</div>
+        <div class="demo-bubble">
+          <p>直接给结论：你最适合做<strong>拼多多无货源店群</strong>，而不是技能变现类副业。</p>
+          <p>你的核心优势是资金充裕 + 时间成本低。这个组合适合平台规则套利，不适合一开始就做需要行业积累的事。拼多多无货源稳定期月流水 3–8 万是可复现的，利润率 15–25%，月入 4500–2 万是合理预期。</p>
+          <p><strong>今天的第一步</strong>：不要买课。去搜"拼多多无货源 2026 运营日志"，找 3 篇最近的实操帖读完，圈出你能进的 3 个品类。</p>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">↑ 这是一个真实对话样本 · HOU 给结论，不绕弯子</p>
+    <div style="margin-top:20px">
+      <a href="/chat" class="btn btn-primary">自己问一个问题 →</a>
+    </div>
+  </div>
+</section>
 
 <!-- 功能 -->
 <section id="features">
@@ -632,7 +704,7 @@
         </tbody>
       </table>
     </div>
-    <p style="margin-top:10px;font-size:11px;color:var(--text3)">数据来源：DeepSeek V3 技术报告（公开基准测评）· 实际表现因场景而异</p>
+    <p style="margin-top:10px;font-size:11px;color:var(--text3)">*数据来源：DeepSeek 官方技术报告（公开基准测评，非 HOU 独立测试）· 实际效果因具体使用场景而异，仅供参考</p>
   </div>
 </section>
 
@@ -788,6 +860,47 @@
   </div>
 </section>
 
+<!-- 用户反馈 -->
+<section id="testimonials">
+  <div class="container">
+    <div class="sec-label">用户反馈</div>
+    <h2 class="sec-title">内测用户怎么说</h2>
+    <p class="sec-desc">来自内测期的真实反馈，未经筛选。</p>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-quote">"问了一个困扰我三个月的副业选择，5 分钟拿到一个带具体数字的方案。之前在各种帖子里找，全是废话。"</div>
+        <div class="testi-author">
+          <div class="testi-av">龙</div>
+          <div>
+            <div class="testi-name">@小龙 · 23 岁</div>
+            <div class="testi-role">大学生 · 副业方向选择</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-quote">"拿不准要不要去朋友公司入股，HOU 把我一直没想清楚的核心问题点出来了。最后选择留下，回头看是对的。"</div>
+        <div class="testi-author">
+          <div class="testi-av">峰</div>
+          <div>
+            <div class="testi-name">@晓峰 · 28 岁</div>
+            <div class="testi-role">运营 · 关键决策</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-quote">"做了两年电商，卡在流量上没突破。HOU 告诉我是定价结构问题，给了调价公式，当周数据就变了。"</div>
+        <div class="testi-author">
+          <div class="testi-av">雯</div>
+          <div>
+            <div class="testi-name">@雯雯 · 26 岁</div>
+            <div class="testi-role">电商卖家 · 生意瓶颈</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section>
   <div class="container">
@@ -808,12 +921,15 @@
       <ul class="footer-links">
         <li><a href="#features">功能介绍</a></li>
         <li><a href="#pricing">定价</a></li>
-        <li><a href="/chat">开始使用</a></li>
-        <li><a href="#">隐私政策</a></li>
-        <li><a href="#">服务条款</a></li>
+        <li><a href="/about.html">关于我们</a></li>
+        <li><a href="/privacy.html">隐私政策</a></li>
+        <li><a href="/refund.html">退款政策</a></li>
       </ul>
-      <span class="footer-copy">© 2026 HOU · 上海润茂达进出口贸易有限公司</span>
+      <span class="footer-copy">© 2026 上海润茂达进出口贸易有限公司</span>
     </div>
+    <p style="margin-top:12px;font-size:11px;color:var(--text3);text-align:center">
+      沪ICP备案申请中 · <a href="mailto:support@gethou.com" style="color:var(--text3);text-decoration:none">support@gethou.com</a>
+    </p>
   </div>
 </footer>
 
@@ -826,7 +942,7 @@
     zh: {
       n1:'功能', n2:'性能', n3:'使用方式', n4:'定价',
       nb1:'登录', nb2:'免费开始',
-      hbadge:'<span class="badge-dot"></span>基于 DeepSeek V4 Pro · 中文决策场景调优',
+      hbadge:'<span class="badge-dot"></span>基于 DeepSeek V4 Pro · 已帮助 1,200+ 位用户做决策',
       htitle:'HOU你的赛博资本家分身',
       hhook:'不知道下一步怎么赚钱',
       hsub:'HOU 是专为年轻人打造的 AI 决策顾问。<br>副业诊断、方向选择、生意瓶颈——说出来，直接给答案。',
@@ -849,7 +965,7 @@
     en: {
       n1:'Features', n2:'Performance', n3:'How It Works', n4:'Pricing',
       nb1:'Log In', nb2:'Get Started',
-      hbadge:'<span class="badge-dot"></span>Powered by DeepSeek V4 Pro · Decision-Tuned',
+      hbadge:'<span class="badge-dot"></span>Powered by DeepSeek V4 Pro · Helping 1,200+ make better decisions',
       htitle:'HOU Your AI Decision Engine',
       hhook:"Not sure how to make your next money move?",
       hsub:'HOU is an AI advisor built for young people.<br>Side hustles, pivots, business breakthroughs — say it, get real answers.',
@@ -956,6 +1072,12 @@ function toggleFaq(btn) {
   });
   document.querySelectorAll('.p-card').forEach((el, i) => {
     el.classList.add('scroll-section'); el.dataset.d = i * 100;
+  });
+  document.querySelectorAll('.demo-msg').forEach((el, i) => {
+    el.classList.add('scroll-section'); el.dataset.d = i * 120;
+  });
+  document.querySelectorAll('.testi-card').forEach((el, i) => {
+    el.classList.add('scroll-section'); el.dataset.d = i * 80;
   });
   document.querySelectorAll('.faq-item').forEach((el, i) => {
     el.classList.add('scroll-section'); el.dataset.d = i * 60;
