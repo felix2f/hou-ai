@@ -186,6 +186,19 @@
     .auth-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
     .auth-err { color: #ff4444; font-size: 12px; margin-top: 10px; min-height: 16px; }
     .auth-note { font-size: 12px; color: var(--text2); margin-top: 14px; text-align: center; line-height: 1.65; }
+    .auth-trial-btn {
+      width: 100%; background: rgba(255,69,0,0.07); border: 1px solid rgba(255,69,0,0.28);
+      border-radius: 10px; padding: 15px; color: var(--primary);
+      font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; margin-bottom: 6px;
+    }
+    .auth-trial-btn:hover { background: rgba(255,69,0,0.14); }
+    .auth-trial-btn:disabled { opacity: 0.35; cursor: default; }
+    .auth-or {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text2); font-size: 12px; margin: 16px 0 14px;
+    }
+    .auth-or::before, .auth-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .dev-hint {
       background: rgba(255,140,0,0.07); border: 1px solid rgba(255,140,0,0.2);
       border-radius: 8px; padding: 9px 13px; margin-top: 12px;
@@ -614,7 +627,14 @@
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-box">
     <div class="auth-logo">HOU</div>
-    <div class="auth-title">登录 / 注册</div>
+    <div class="auth-title">选择使用方式</div>
+    <div id="trialSection">
+      <button class="auth-trial-btn" id="trialBtn" onclick="startFreeTrial()">
+        免费试用 · 剩余 <span id="trialRemain">2</span> 次
+      </button>
+      <div style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:2px">无需注册，体验后可随时登录保存记录</div>
+    </div>
+    <div class="auth-or" id="authOrDivider"><span>或</span></div>
     <div>
       <div class="auth-label">手机号</div>
       <input type="tel" class="auth-input" id="authPhone" placeholder="请输入手机号" maxlength="11" oninput="onPhoneInput()" />
@@ -723,12 +743,7 @@ let currentUser = null;
 
 async function checkAuth() {
   if (!currentToken) {
-    if (localStorage.getItem('hou_visited') === 'true') {
-      showAuthModal();
-    } else {
-      showEmpty();
-      updateGuestHeader();
-    }
+    showAuthModal();
     return;
   }
   try {
@@ -741,8 +756,36 @@ async function checkAuth() {
   } catch { showAuthModal(); }
 }
 
-function showAuthModal() { document.getElementById('authOverlay').classList.add('show'); }
+function showAuthModal() {
+  // 每次清空手机号，强制重新输入
+  const inp = document.getElementById('authPhone');
+  if (inp) inp.value = '';
+  const mainBtn = document.getElementById('authMainBtn');
+  if (mainBtn) mainBtn.disabled = true;
+  setAuthErr('');
+  // 更新试用剩余次数
+  const guestCount = parseInt(localStorage.getItem('hou_guest_count') || '0');
+  const remaining = Math.max(0, 2 - guestCount);
+  const trialRemain = document.getElementById('trialRemain');
+  const trialSection = document.getElementById('trialSection');
+  const orDivider = document.getElementById('authOrDivider');
+  if (trialRemain) trialRemain.textContent = remaining;
+  if (remaining <= 0) {
+    if (trialSection) trialSection.style.display = 'none';
+    if (orDivider) orDivider.style.display = 'none';
+  } else {
+    if (trialSection) trialSection.style.display = 'block';
+    if (orDivider) orDivider.style.display = 'flex';
+  }
+  document.getElementById('authOverlay').classList.add('show');
+}
 function hideAuthModal() { document.getElementById('authOverlay').classList.remove('show'); }
+
+function startFreeTrial() {
+  hideAuthModal();
+  showEmpty();
+  updateGuestHeader();
+}
 
 function onPhoneInput() {
   const v = document.getElementById('authPhone').value.trim();
@@ -841,7 +884,6 @@ async function loadRemoteHistory() {
     if (!Array.isArray(remote)) return;
 
     if (remote.length > 0) {
-      // 服务端有数据 → 以服务端为准覆盖本地
       const sessions = remote.map(c => ({
         id: c.id,
         title: c.title,
@@ -850,7 +892,6 @@ async function loadRemoteHistory() {
       }));
       saveSessions(sessions);
     } else {
-      // 服务端为空 → 把本地历史上传（首次迁移）
       getSessions().forEach(s => syncSessionToServer(s));
     }
     renderHistory();
@@ -1112,14 +1153,14 @@ async function sendMsg() {
       }
     }
     msgs.push({ role:'assistant', content:full });
+    saveCurrentSession();
+    track('message_sent', { session_id: currentSessionId });
     if (!currentToken) {
       const newCount = parseInt(localStorage.getItem('hou_guest_count') || '0') + 1;
       localStorage.setItem('hou_guest_count', newCount);
       if (newCount >= 2) localStorage.setItem('hou_visited', 'true');
       updateGuestHeader();
     }
-    saveCurrentSession();
-    track('message_sent', { session_id: currentSessionId });
     await refreshUserInfo(); updateUserHeader();
   } catch {
     loader.remove();
