@@ -1,7 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const FREE_LIMIT = 5;
-const OPEN_BETA = process.env.OPEN_BETA !== 'false'; // Vercel 设 OPEN_BETA=false 即开启限流
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -37,7 +36,7 @@ export default async function handler(req, res) {
     const profile = Array.isArray(profiles) && profiles[0];
     const isPro = profile && profile.is_pro && (!profile.pro_expires_at || new Date(profile.pro_expires_at) > new Date());
 
-    if (!OPEN_BETA && !isPro) {
+    if (!isPro) {
       const today = new Date().toISOString().split('T')[0];
       const usageRes = await fetch(
         `${SUPABASE_URL}/rest/v1/usage_logs?user_id=eq.${userId}&date=eq.${today}&select=id,message_count`,

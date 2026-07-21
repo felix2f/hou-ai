@@ -843,7 +843,7 @@ function updateUserHeader() {
   const rem = currentUser.remaining;
   el.innerHTML = `
     <span class="h-phone">${maskPhone(currentUser.phone)}</span>
-    <span class="h-badge ${isPro?'pro':'free'}">${isPro?'PRO':`${rem??0}次`}</span>
+    <span class="h-badge ${isPro?'pro':'free'}">${isPro?'无限次':`${rem??0}次`}</span>
     ${!isPro?`<button class="h-upgrade" onclick="showUpgrade()">升级 Pro</button>`:''}
   `;
   if (typeof applyChatLang === 'function') applyChatLang(window._chatLang || localStorage.getItem('hou_lang') || 'zh');
