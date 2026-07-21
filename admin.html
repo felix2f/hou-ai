@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOU · 管理后台</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#0a0a0e; --surface:#111116; --surface2:#18181f;
+  --border:#1e1e2a; --primary:#FF4500; --text:#e4e4f0; --text2:#55556a;
+  --green:#22c55e; --red:#ef4444; --blue:#3b82f6;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif; min-height:100vh; }
+
+/* ── 登录页 ── */
+#loginPage {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+}
+.login-box {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:20px; padding:48px 40px; width:360px;
+  box-shadow:0 0 80px rgba(0,0,0,0.8);
+}
+.login-logo {
+  font-size:32px; font-weight:900; letter-spacing:-2px; margin-bottom:6px;
+  background:linear-gradient(135deg,#FF4500,#FF8C00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.login-sub { font-size:13px; color:var(--text2); margin-bottom:32px; }
+.login-input {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:13px 16px; color:var(--text); font-size:15px;
+  outline:none; font-family:inherit; margin-bottom:16px;
+  transition:border-color .3s;
+}
+.login-input:focus { border-color:var(--primary); }
+.login-btn {
+  width:100%; background:linear-gradient(135deg,#FF4500,#FF8C00);
+  border:none; border-radius:10px; padding:14px; color:#fff;
+  font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
+  transition:opacity .2s;
+}
+.login-btn:hover { opacity:.88; }
+.login-err { color:#ef4444; font-size:12px; margin-top:10px; min-height:18px; }
+
+/* ── 后台主体 ── */
+#adminPage { display:none; }
+.admin-header {
+  background:rgba(10,10,14,.97); border-bottom:1px solid var(--border);
+  padding:0 32px; height:56px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:10;
+}
+.admin-logo {
+  font-size:18px; font-weight:900; letter-spacing:-1px;
+  background:linear-gradient(135deg,#FF4500,#FF8C00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.admin-logo span { font-size:12px; color:var(--text2); font-weight:400; margin-left:8px; letter-spacing:2px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.refresh-btn {
+  background:none; border:1px solid var(--border); border-radius:8px;
+  padding:6px 14px; color:var(--text2); font-size:13px; cursor:pointer;
+  font-family:inherit; transition:all .2s;
+}
+.refresh-btn:hover { border-color:var(--primary); color:var(--primary); }
+.last-update { font-size:11px; color:var(--text2); }
+.logout-btn {
+  background:none; border:none; color:var(--text2); font-size:13px;
+  cursor:pointer; font-family:inherit;
+}
+.logout-btn:hover { color:var(--red); }
+
+.admin-body { padding:28px 32px; max-width:1200px; }
+
+/* ── 概览卡片 ── */
+.overview-grid {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:32px;
+}
+@media(max-width:900px) { .overview-grid { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:560px) { .overview-grid { grid-template-columns:repeat(2,1fr); } }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:20px 18px;
+}
+.stat-label { font-size:11px; color:var(--text2); letter-spacing:2px; margin-bottom:10px; }
+.stat-value { font-size:28px; font-weight:800; letter-spacing:-1px; }
+.stat-value.green { color:var(--green); }
+.stat-value.orange { background:linear-gradient(135deg,#FF4500,#FF8C00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.stat-sub { font-size:11px; color:var(--text2); margin-top:6px; }
+
+/* ── Tab ── */
+.tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:1px solid var(--border); }
+.tab-btn {
+  background:none; border:none; padding:10px 20px; color:var(--text2);
+  font-size:14px; cursor:pointer; font-family:inherit; border-bottom:2px solid transparent;
+  margin-bottom:-1px; transition:all .2s;
+}
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* ── 用户列表 ── */
+.search-row { display:flex; gap:10px; margin-bottom:16px; }
+.search-input {
+  flex:1; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:9px 14px; color:var(--text); font-size:14px;
+  outline:none; font-family:inherit; transition:border-color .3s;
+}
+.search-input:focus { border-color:var(--primary); }
+.filter-select {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:9px 14px; color:var(--text); font-size:13px;
+  outline:none; cursor:pointer;
+}
+.user-table { width:100%; border-collapse:collapse; }
+.user-table th {
+  text-align:left; padding:10px 14px; font-size:11px; color:var(--text2);
+  letter-spacing:2px; border-bottom:1px solid var(--border); font-weight:500;
+}
+.user-table td {
+  padding:12px 14px; font-size:14px; border-bottom:1px solid rgba(30,30,42,.6);
+  vertical-align:middle;
+}
+.user-table tr:last-child td { border-bottom:none; }
+.user-table tr:hover td { background:rgba(255,255,255,.02); }
+.badge {
+  display:inline-block; font-size:10px; font-weight:700; padding:2px 8px;
+  border-radius:100px; letter-spacing:1px;
+}
+.badge.pro { background:linear-gradient(135deg,#FF4500,#FF8C00); color:#fff; }
+.badge.free { background:rgba(255,255,255,.05); color:var(--text2); border:1px solid var(--border); }
+.online-dot {
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--green); box-shadow:0 0 6px var(--green); margin-right:6px;
+}
+.offline-dot {
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--text2); margin-right:6px;
+}
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.table-inner { overflow-x:auto; }
+
+/* ── 用户建议 ── */
+.feedback-list { display:flex; flex-direction:column; gap:10px; }
+.feedback-item {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:16px 20px;
+}
+.fb-meta { display:flex; gap:12px; align-items:center; margin-bottom:8px; }
+.fb-phone { font-size:12px; color:var(--text2); }
+.fb-time { font-size:11px; color:var(--text2); }
+.fb-content { font-size:14px; line-height:1.65; }
+.empty-tip { text-align:center; padding:60px 0; color:var(--text2); font-size:14px; }
+
+/* ── 加载 ── */
+.loading { text-align:center; padding:60px 0; color:var(--text2); font-size:14px; }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">HOU</div>
+    <div class="login-sub">管理后台 · 仅限内部使用</div>
+    <input type="password" class="login-input" id="keyInput" placeholder="输入管理密钥" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">进入后台</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 后台主体 -->
+<div id="adminPage">
+  <div class="admin-header">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="admin-logo">HOU <span>ADMIN</span></div>
+    </div>
+    <div class="header-right">
+      <span class="last-update" id="lastUpdate"></span>
+      <button class="refresh-btn" onclick="loadData()">刷新</button>
+      <button class="logout-btn" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <!-- 概览 -->
+    <div class="overview-grid">
+      <div class="stat-card">
+        <div class="stat-label">实时在线</div>
+        <div class="stat-value green" id="s-online">—</div>
+        <div class="stat-sub">最近30分钟活跃</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">总用户数</div>
+        <div class="stat-value" id="s-total">—</div>
+        <div class="stat-sub">累计注册</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">付费用户</div>
+        <div class="stat-value orange" id="s-pro">—</div>
+        <div class="stat-sub" id="s-free-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">未付费用户</div>
+        <div class="stat-value" id="s-free">—</div>
+        <div class="stat-sub">等待转化</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">总消息数</div>
+        <div class="stat-value" id="s-msgs">—</div>
+        <div class="stat-sub">累计对话</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">总收入</div>
+        <div class="stat-value orange" id="s-revenue">—</div>
+        <div class="stat-sub">支付接入后实时</div>
+      </div>
+    </div>
+
+    <!-- Tab -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('users',this)">用户列表</button>
+      <button class="tab-btn" onclick="switchTab('feedback',this)">用户建议</button>
+    </div>
+
+    <!-- 用户列表 -->
+    <div id="tabUsers">
+      <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索手机号…" oninput="renderUsers()">
+        <select class="filter-select" id="filterType" onchange="renderUsers()">
+          <option value="all">全部用户</option>
+          <option value="pro">付费用户</option>
+          <option value="free">未付费</option>
+          <option value="online">在线中</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <div class="table-inner">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>手机号</th>
+                <th>状态</th>
+                <th>类型</th>
+                <th>消息数</th>
+                <th>注册时间</th>
+              </tr>
+            </thead>
+            <tbody id="userTbody">
+              <tr><td colspan="5" class="loading">加载中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户建议 -->
+    <div id="tabFeedback" style="display:none">
+      <div class="feedback-list" id="feedbackList">
+        <div class="loading">加载中…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let adminKey = sessionStorage.getItem('hou_admin_key') || '';
+let _users = [];
+let _feedbacks = [];
+
+if (adminKey) initAdmin();
+
+function doLogin() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k) return;
+  adminKey = k;
+  sessionStorage.setItem('hou_admin_key', k);
+  loadData();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('hou_admin_key');
+  adminKey = '';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('adminPage').style.display = 'none';
+}
+
+function initAdmin() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('adminPage').style.display = 'block';
+  loadData();
+  setInterval(loadData, 60000);
+}
+
+async function loadData() {
+  try {
+    const r = await fetch('/api/admin', { headers: { 'x-admin-key': adminKey } });
+    if (r.status === 403) {
+      document.getElementById('loginErr').textContent = '密钥错误';
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('adminPage').style.display = 'none';
+      sessionStorage.removeItem('hou_admin_key');
+      return;
+    }
+    const d = await r.json();
+    if (!d.overview) return;
+
+    // 概览
+    const o = d.overview;
+    document.getElementById('s-online').textContent = o.online;
+    document.getElementById('s-total').textContent = o.total_users;
+    document.getElementById('s-pro').textContent = o.pro_users;
+    document.getElementById('s-free-sub').textContent = `转化率 ${o.total_users ? Math.round(o.pro_users/o.total_users*100) : 0}%`;
+    document.getElementById('s-free').textContent = o.free_users;
+    document.getElementById('s-msgs').textContent = o.total_messages.toLocaleString();
+    document.getElementById('s-revenue').textContent = '¥' + o.total_revenue.toFixed(1);
+    document.getElementById('lastUpdate').textContent = '更新于 ' + new Date().toLocaleTimeString('zh');
+
+    _users = d.users || [];
+    _feedbacks = d.feedbacks || [];
+
+    renderUsers();
+    renderFeedbacks();
+
+    initAdmin._shown = true;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function maskPhone(p) {
+  if (!p || p.length < 7) return p || '—';
+  return p.slice(0,3) + '****' + p.slice(-4);
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function renderUsers() {
+  const q = (document.getElementById('searchInput')?.value || '').trim();
+  const f = document.getElementById('filterType')?.value || 'all';
+  let list = _users;
+  if (q) list = list.filter(u => u.phone && u.phone.includes(q));
+  if (f === 'pro') list = list.filter(u => u.is_pro);
+  if (f === 'free') list = list.filter(u => !u.is_pro);
+  if (f === 'online') list = list.filter(u => u.online);
+
+  const tbody = document.getElementById('userTbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无数据</td></tr>'; return;
+  }
+  tbody.innerHTML = list.map(u => `
+    <tr>
+      <td style="font-family:monospace">${maskPhone(u.phone)}</td>
+      <td>${u.online ? '<span class="online-dot"></span>在线' : '<span class="offline-dot"></span>离线'}</td>
+      <td><span class="badge ${u.is_pro?'pro':'free'}">${u.is_pro?'PRO':'FREE'}</span></td>
+      <td>${u.messages}</td>
+      <td style="color:var(--text2);font-size:13px">${fmtTime(u.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderFeedbacks() {
+  const el = document.getElementById('feedbackList');
+  if (!_feedbacks.length) {
+    el.innerHTML = '<div class="empty-tip">还没有用户建议</div>'; return;
+  }
+  el.innerHTML = _feedbacks.map(f => `
+    <div class="feedback-item">
+      <div class="fb-meta">
+        <span class="fb-phone">${maskPhone(f.phone)}</span>
+        <span class="fb-time">${fmtTime(f.created_at)}</span>
+      </div>
+      <div class="fb-content">${esc(f.content)}</div>
+    </div>
+  `).join('');
+}
+
+function esc(t) {
+  return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tabUsers').style.display = name==='users' ? 'block' : 'none';
+  document.getElementById('tabFeedback').style.display = name==='feedback' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

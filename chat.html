@@ -625,6 +625,20 @@
   </div>
 </div>
 
+<!-- 反馈弹窗 -->
+<div class="auth-overlay" id="feedbackOverlay" style="z-index:55">
+  <div class="auth-box">
+    <div class="auth-logo" style="font-size:20px;margin-bottom:4px">提交建议</div>
+    <div class="auth-title">你的反馈会直接被看到</div>
+    <textarea id="feedbackText" class="auth-input" style="min-height:120px;resize:none;line-height:1.6" placeholder="说说你的想法、遇到的问题或功能需求…" maxlength="500"></textarea>
+    <button class="auth-btn" id="feedbackBtn" onclick="submitFeedback()" style="margin-top:12px">提交</button>
+    <div class="auth-err" id="feedbackErr"></div>
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="closeFeedback()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- 升级弹窗 -->
 <div class="upgrade-overlay" id="upgradeOverlay">
   <div class="upgrade-box">
@@ -669,6 +683,8 @@
               <button id="smBtnEn" onclick="setLang('en')">EN</button>
             </div>
           </div>
+          <div class="sm-divider"></div>
+          <button class="sm-logout" style="color:var(--text2)" id="smFeedbackBtn" onclick="openFeedback()">提交建议</button>
           <div class="sm-divider"></div>
           <button class="sm-logout" id="smLogoutBtn" onclick="doLogout()">退出登录</button>
         </div>
@@ -1214,6 +1230,35 @@ document.addEventListener('click', function(e) {
 function doLogout() {
   localStorage.clear();
   window.location.href = '/';
+}
+
+function openFeedback() {
+  document.getElementById('feedbackText').value = '';
+  document.getElementById('feedbackErr').textContent = '';
+  document.getElementById('feedbackBtn').disabled = false;
+  document.getElementById('feedbackBtn').textContent = '提交';
+  document.getElementById('feedbackOverlay').classList.add('show');
+  document.getElementById('settingsMenu').classList.remove('open');
+  _settingsOpen = false;
+}
+
+function closeFeedback() {
+  document.getElementById('feedbackOverlay').classList.remove('show');
+}
+
+async function submitFeedback() {
+  const content = document.getElementById('feedbackText').value.trim();
+  if (!content) { document.getElementById('feedbackErr').textContent = '请输入内容'; return; }
+  const btn = document.getElementById('feedbackBtn');
+  btn.disabled = true; btn.textContent = '提交中…';
+  try {
+    await track('feedback', { content });
+    btn.textContent = '已提交';
+    setTimeout(closeFeedback, 1000);
+  } catch {
+    document.getElementById('feedbackErr').textContent = '提交失败，请重试';
+    btn.disabled = false; btn.textContent = '提交';
+  }
 }
 
 /* ── 多语言（聊天页） ── */
