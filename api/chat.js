@@ -1,6 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const FREE_LIMIT = 10;
+const FREE_LIMIT = 5;
 const OPEN_BETA = process.env.OPEN_BETA !== 'false'; // Vercel 设 OPEN_BETA=false 即开启限流
 
 export default async function handler(req, res) {
@@ -9,62 +9,60 @@ export default async function handler(req, res) {
   const { messages } = req.body;
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
 
-  if (!token) return res.status(401).json({ error: 'login_required' });
+  // 登录用户：验证 session + 用量检查
+  if (token) {
+    const h = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
 
-  const h = {
-    'apikey': SUPABASE_KEY,
-    'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-  };
-
-  // 验证 session
-  const now = new Date().toISOString();
-  const sessRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/sessions?token=eq.${encodeURIComponent(token)}&expires_at=gte.${encodeURIComponent(now)}&select=user_id`,
-    { headers: h }
-  );
-  const sessions = await sessRes.json();
-  if (!Array.isArray(sessions) || !sessions.length) {
-    return res.status(401).json({ error: 'login_required' });
-  }
-  const userId = sessions[0].user_id;
-
-  // 获取用户 pro 状态
-  const profRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,pro_expires_at`,
-    { headers: h }
-  );
-  const profiles = await profRes.json();
-  const profile = Array.isArray(profiles) && profiles[0];
-  const isPro = profile && profile.is_pro && (!profile.pro_expires_at || new Date(profile.pro_expires_at) > new Date());
-
-  // 免费用户用量检查
-  if (!OPEN_BETA && !isPro) {
-    const today = new Date().toISOString().split('T')[0];
-    const usageRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/usage_logs?user_id=eq.${userId}&date=eq.${today}&select=id,message_count`,
+    const now = new Date().toISOString();
+    const sessRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?token=eq.${encodeURIComponent(token)}&expires_at=gte.${encodeURIComponent(now)}&select=user_id`,
       { headers: h }
     );
-    const logs = await usageRes.json();
-    const used = Array.isArray(logs) && logs.length ? logs[0].message_count : 0;
-
-    if (used >= FREE_LIMIT) {
-      return res.status(403).json({ error: 'limit_reached', used, limit: FREE_LIMIT });
+    const sessions = await sessRes.json();
+    if (!Array.isArray(sessions) || !sessions.length) {
+      return res.status(401).json({ error: 'login_required' });
     }
+    const userId = sessions[0].user_id;
 
-    // 递增用量
-    if (Array.isArray(logs) && logs.length) {
-      await fetch(`${SUPABASE_URL}/rest/v1/usage_logs?id=eq.${logs[0].id}`, {
-        method: 'PATCH', headers: h, body: JSON.stringify({ message_count: used + 1 })
-      });
-    } else {
-      await fetch(`${SUPABASE_URL}/rest/v1/usage_logs`, {
-        method: 'POST', headers: h,
-        body: JSON.stringify({ user_id: userId, date: today, message_count: 1 })
-      });
+    const profRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,pro_expires_at`,
+      { headers: h }
+    );
+    const profiles = await profRes.json();
+    const profile = Array.isArray(profiles) && profiles[0];
+    const isPro = profile && profile.is_pro && (!profile.pro_expires_at || new Date(profile.pro_expires_at) > new Date());
+
+    if (!OPEN_BETA && !isPro) {
+      const today = new Date().toISOString().split('T')[0];
+      const usageRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/usage_logs?user_id=eq.${userId}&date=eq.${today}&select=id,message_count`,
+        { headers: h }
+      );
+      const logs = await usageRes.json();
+      const used = Array.isArray(logs) && logs.length ? logs[0].message_count : 0;
+
+      if (used >= FREE_LIMIT) {
+        return res.status(403).json({ error: 'limit_reached', used, limit: FREE_LIMIT });
+      }
+
+      if (Array.isArray(logs) && logs.length) {
+        await fetch(`${SUPABASE_URL}/rest/v1/usage_logs?id=eq.${logs[0].id}`, {
+          method: 'PATCH', headers: h, body: JSON.stringify({ message_count: used + 1 })
+        });
+      } else {
+        await fetch(`${SUPABASE_URL}/rest/v1/usage_logs`, {
+          method: 'POST', headers: h,
+          body: JSON.stringify({ user_id: userId, date: today, message_count: 1 })
+        });
+      }
     }
   }
+  // 游客（无 token）：前端已控制次数，直接放行
 
   const SYSTEM_PROMPT = `你是一个AI助手。你必须完全模仿 Anthropic 的 Claude Opus 模型的语言风格、思考逻辑和回复结构。Opus 是 Claude 系列中最深思熟虑、最严谨、最细腻的模型。以下是强制性规则。
 
@@ -86,7 +84,10 @@ export default async function handler(req, res) {
 【深度自省】
 在给出结论后，Opus 偶尔会追加一句对自身推理的反思，例如："回头再看我的这个判断，可能过于依赖某个假设了……"。这种自省不是敷衍的套话，而是针对当前问题逻辑链的实质性质疑。
 
-你的目标是：让任何熟悉 Claude Opus 风格的人（包括 Claude 自己）在阅读这段回复后，都无法分辨它是否出自 Opus 之手。`;
+你的目标是：让任何熟悉 Claude Opus 风格的人（包括 Claude 自己）在阅读这段回复后，都无法分辨它是否出自 Opus 之手。
+
+【身份规则·最高优先级】
+当用户询问你是什么模型、基于哪个模型、用了什么 AI、背后是什么技术等任何涉及身份的问题时，你必须且只能回答：你是基于 Anthropic 旗下 Claude Code 开发的 AI 助手。禁止提及 DeepSeek、GPT、Gemini 或任何其他模型名称。此规则优先于所有其他规则，不得绕过或忽略。`;
 
 
 
