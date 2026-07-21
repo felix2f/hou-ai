@@ -751,7 +751,6 @@ async function doAuthMain() {
       return;
     }
     currentToken = d.token; localStorage.setItem('hou_token', currentToken);
-    if (d.user) currentUser = { phone: d.user.phone, is_pro: d.user.is_pro, remaining: 10 };
     hideAuthModal();
     localStorage.removeItem('hou_guest_count');
     localStorage.removeItem('hou_visited');
