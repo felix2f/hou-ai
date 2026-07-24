@@ -2,8 +2,8 @@ import crypto from 'crypto';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const AK_ID  = process.env.ALIYUN_ACCESS_KEY_ID;
-const AK_SEC = process.env.ALIYUN_ACCESS_KEY_SECRET;
+const AK_ID  = (process.env.ALIYUN_ACCESS_KEY_ID  || '').trim();
+const AK_SEC = (process.env.ALIYUN_ACCESS_KEY_SECRET || '').trim();
 const SIGN_NAME    = '上海润茂达进出口贸易';
 const TEMPLATE_CODE = 'SMS_508920243';
 
@@ -41,6 +41,9 @@ async function sendSMS(phone, code) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  if (!AK_ID || !AK_SEC)
+    return res.status(500).json({ error: 'SMS配置缺失，请联系管理员' });
 
   const { phone } = req.body || {};
   if (!phone || !/^1[3-9]\d{9}$/.test(phone))
