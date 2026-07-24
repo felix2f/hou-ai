@@ -4,8 +4,8 @@
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
   "functions": {
-    "api/send-sms.js": { "regions": ["hkg1"] },
-    "api/verify-sms.js": { "regions": ["hkg1"] },
-    "api/beta-login.js": { "regions": ["hkg1"] }
+    "api/send-sms.js": { "regions": ["sin1"] },
+    "api/verify-sms.js": { "regions": ["sin1"] },
+    "api/beta-login.js": { "regions": ["sin1"] }
   }
 }

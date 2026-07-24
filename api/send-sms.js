@@ -33,7 +33,7 @@ async function sendSMS(phone, code) {
   const sig = crypto.createHmac('sha1', `${AK_SEC}&`).update(toSign).digest('base64');
 
   const url = `https://dysmsapi.aliyuncs.com/?${qs}&Signature=${pct(sig)}`;
-  const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
   const json = await resp.json();
   if (json.Code !== 'OK') throw new Error(json.Message || json.Code || '发送失败');
   return json;
